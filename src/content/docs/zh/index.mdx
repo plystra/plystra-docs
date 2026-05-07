@@ -1,0 +1,42 @@
+---
+title: Plystra Core
+description: 面向可解释业务权限的自托管身份与授权核心。
+template: splash
+hero:
+  tagline: 用于账号身份分离、资源级作用域权限、可解释授权决策和追加式审计日志的自托管 Core。
+  image:
+    file: ../../../assets/houston.webp
+  actions:
+    - text: 快速开始
+      link: /zh/getting-started/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/plystra/plystra
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Plystra v1.0 覆盖范围
+
+<CardGrid stagger>
+	<Card title="可解释身份链路" icon="user">
+		每次授权决策都会说明是谁通过 `User -> UserMember -> Member -> Space` 这条链路发起行为。
+	</Card>
+	<Card title="作用域权限" icon="setting">
+		权限会按照 `self`、`group`、`group_tree`、`space` 的规则求值；`global` 在 v1.0 中保留但禁用。
+	</Card>
+	<Card title="资源注册表" icon="document">
+		资源类型、动作、映射、风险等级和默认审计策略都会作为受管元数据保存。
+	</Card>
+	<Card title="追加式审计" icon="open-book">
+		允许和拒绝的决策都会写入 trace 快照，即使后续元数据变化，历史解释仍可读。
+	</Card>
+	<Card title="自托管 Core" icon="rocket">
+		PostgreSQL、版本化迁移、Ent schema 检查、Docker Compose 和生产安全 guard 都属于 Core 的交付范围。
+	</Card>
+	<Card title="受保护 API 面" icon="lock">
+		非公开 Core API 需要 bootstrap admin token；Data Console 和 metrics 默认关闭。
+	</Card>
+</CardGrid>

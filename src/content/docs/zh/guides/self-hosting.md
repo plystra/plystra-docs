@@ -1,0 +1,124 @@
+---
+title: 自托管部署
+description: 使用 Docker Compose、PostgreSQL、migrations、readiness checks 和生产安全配置运行 Plystra Core。
+---
+
+Plystra v1.0 面向 PostgreSQL 自托管。推荐生产形态：
+
+```text
+reverse proxy / load balancer
+    -> plystra-core
+        -> PostgreSQL
+```
+
+以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations 和 `plystractl` 检查作为 baseline。
+
+## Compose baseline
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+重要 Compose 变量：
+
+| 变量 | 默认值 | 用途 |
+|---|---|---|
+| `SERVER_PORT` | `8080` | Core 对外端口。 |
+| `DOCKER_DATABASE_URL` | Compose PostgreSQL URL | 容器内连接数据库使用。 |
+| `CORS_ALLOWED_ORIGINS` | Compose fallback 为 `*` | 开发友好默认值。生产模式会拒绝 wildcard CORS。 |
+| `PLYSTRA_ADMIN_TOKEN` | 开发 placeholder | 受保护路由的 bootstrap token。 |
+| `DATA_CONSOLE_ENABLED` | `false` | 默认关闭 preview data routes。 |
+| `METRICS_ENABLED` | `false` | 默认关闭 `/metrics`。 |
+
+本地开发的 `.env.example` 使用显式 localhost CORS 值。
+
+## 迁移流程
+
+启动可信 API 前必须应用迁移：
+
+```bash
+go run ./cmd/plystractl migrate up
+go run ./cmd/plystractl migrate verify
+go run ./cmd/plystractl ent check
+go run ./cmd/plystractl doctor
+```
+
+生产升级必须使用版本化 migrations。不要把 Ent auto migration 当成生产升级机制。
+
+## 启动 Core
+
+```bash
+go run ./cmd/plystrad
+```
+
+或使用 Compose：
+
+```bash
+docker compose up -d plystra-core
+```
+
+Core 暴露：
+
+```text
+GET /api/v1/health
+GET /api/v1/ready
+GET /api/v1/version
+```
+
+readiness endpoint 会检查数据库连接和预期 migration/schema 状态。
+
+## 生产必填配置
+
+当 `SERVER_MODE=production` 时，启动前会验证：
+
+| 配置 | 生产规则 |
+|---|---|
+| `DATABASE_URL` 或 `PLYSTRA_DATABASE_URL` | 必填；不能使用默认 `plystra:plystra` 凭据。 |
+| `PLYSTRA_SESSION_SECRET`、`SESSION_SECRET`、`JWT_SECRET` 或 `PLYSTRA_JWT_SECRET` | 至少 32 字符，不能是默认 placeholder。 |
+| `PLYSTRA_ADMIN_TOKEN` 或 `ADMIN_TOKEN` | 至少 32 字符，不能是默认 placeholder。 |
+| `CORS_ALLOWED_ORIGINS` | 必填；不能包含 `*`。 |
+| `SERVER_PUBLIC_URL` 或 `PLYSTRA_SERVER_PUBLIC_URL` | 必填；不能指向 localhost。 |
+
+`JWT_SECRET` 是兼容 alias。当前 runtime 使用 opaque bearer token，存储 HMAC token hash，不签发 JWT claims。
+
+## 反向代理与客户端 IP
+
+只有配置 `TRUSTED_PROXIES` 时，Plystra 才信任 forwarded IP headers。否则 request IP metadata 来自 `RemoteAddr`。
+
+只为你自己控制的反向代理配置它：
+
+```text
+TRUSTED_PROXIES=127.0.0.1,10.0.0.0/8
+```
+
+## 审计配置
+
+生产环境建议保持：
+
+```text
+AUDIT_WRITE_MODE=always
+TRACE_VERSION=1.0
+```
+
+授权决策和 Core management mutations 都会写入 audit trace。AuditLog 是 append-only，需要纳入备份和保留策略。
+
+## 备份与升级 checklist
+
+升级前：
+
+1. 阅读 release notes。
+2. 运行 `plystractl doctor`。
+3. 备份 PostgreSQL。
+4. 必要时停止或静默写流量。
+5. 应用 migrations。
+6. 运行 `migrate verify`、`ent check`、`doctor`。
+7. Smoke test health、ready、version、`authz/check`、`authz/explain`、Resource Registry 和 AuditLog 查询。
+
+最低备份命令：
+
+```bash
+pg_dump "$DATABASE_URL" > plystra-backup.sql
+```
+
+生产部署应把备份保存在服务器外，并在 staging 做恢复验证。

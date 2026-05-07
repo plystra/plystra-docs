@@ -1,0 +1,182 @@
+---
+title: HTTP API
+description: 当前 v1.0 HTTP API 行为、认证方式、响应 envelope、受保护路由和 endpoint groups。
+---
+
+Plystra Core 暴露 `/api/v1` HTTP API。OpenAPI 文件位于 Core 仓库：
+
+```text
+openapi/plystra.v1.0.0.yaml
+openapi/plystra.v1.0.0.json
+```
+
+## 响应 envelope
+
+单对象成功响应：
+
+```json
+{
+  "data": {},
+  "meta": {
+    "request_id": "req_..."
+  },
+  "request_id": "req_..."
+}
+```
+
+列表响应包含 pagination：
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "limit": 50,
+    "cursor": null,
+    "has_more": false
+  },
+  "meta": {
+    "request_id": "req_..."
+  },
+  "request_id": "req_..."
+}
+```
+
+错误响应：
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid JSON.",
+    "details": null,
+    "request_id": "req_..."
+  },
+  "meta": {
+    "request_id": "req_..."
+  },
+  "request_id": "req_..."
+}
+```
+
+API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
+
+## 认证层
+
+| 层级 | 适用范围 | 机制 |
+|---|---|---|
+| 公开运维路由 | health、ready、version | 不需要 token。 |
+| Session auth | login、refresh、logout、actor context、switch-member | 使用登录凭据和 opaque bearer token，token 以 HMAC hash 存储。 |
+| Admin bootstrap protection | 非公开 Core API | 需要 `X-Plystra-Admin-Token`、`X-Admin-Token` 或 `Authorization: Bearer <admin-token>`。 |
+| Metrics token | 启用后的 `/metrics` | 需要 `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`，或 admin token fallback。 |
+
+受保护路由没有配置 admin token 时返回 `ADMIN_TOKEN_NOT_CONFIGURED`。配置了但请求缺失或错误时返回 `ADMIN_TOKEN_REQUIRED`。
+
+## 公开路由
+
+| Method | Path |
+|---|---|
+| `GET` | `/api/v1/health` |
+| `GET` | `/api/v1/ready` |
+| `GET` | `/api/v1/version` |
+| `GET` | `/api/v1/system/health` |
+| `GET` | `/api/v1/system/ready` |
+| `GET` | `/api/v1/system/version` |
+| `GET` | `/system/health` |
+| `GET` | `/system/ready` |
+| `GET` | `/system/version` |
+
+`/metrics` 会进入公开路由分支，让 handler 自己返回 `FEATURE_DISABLED` 或验证 metrics token。默认关闭。
+
+## Session 路由
+
+| Method | Path | 说明 |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | 接收 `email` 和 `password`；返回 access/refresh tokens。 |
+| `POST` | `/api/v1/auth/refresh` | 接收 `refresh_token`；轮换 access token。 |
+| `POST` | `/api/v1/auth/logout` | 使用 bearer access token 或 body refresh token 撤销 session。 |
+| `GET` | `/api/v1/actor/context` | 需要 access token。返回当前 actor 和 available members。 |
+| `POST` | `/api/v1/actor/switch-member` | 需要 access token。切换 active Member/UserMember binding。 |
+
+本地开发种子账号：
+
+```text
+alice@example.com / plystra-demo
+bob@example.com / plystra-demo
+```
+
+## 授权路由
+
+| Method | Path | 说明 |
+|---|---|---|
+| `POST` | `/api/v1/authz/check` | 执行决策并写 audit。 |
+| `POST` | `/api/v1/authz/explain` | 与 check 相同，但开启 explain。 |
+
+示例：
+
+```bash
+curl -X POST http://localhost:8080/api/v1/authz/check \
+  -H "Content-Type: application/json" \
+  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -d '{
+    "actor": {
+      "user_id": "user_alice",
+      "member_id": "member_finance_reviewer",
+      "user_member_id": "um_alice_finance_reviewer",
+      "space_id": "space_acme"
+    },
+    "resource_type": "invoice",
+    "resource_id": "invoice_001",
+    "action": "approve"
+  }'
+```
+
+HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务端值为准。
+
+## Core 管理路由
+
+本节所有路由都需要 admin token。
+
+| Group | Routes |
+|---|---|
+| Overview | `GET /api/v1/console/overview` |
+| AuditLog | `GET /api/v1/audit-logs`、`GET /api/v1/audit-logs/{id}`，以及 legacy `/api/v1/audit/logs` aliases |
+| Resource Registry | `GET/POST /api/v1/resource-types`，`GET /api/v1/resource-types/{key}`，`GET/POST /api/v1/resource-types/{key}/actions`，`GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
+| Users | `GET/POST /api/v1/users`，`GET/PATCH /api/v1/users/{id}`，`POST /api/v1/users/{id}/disable`，`POST /api/v1/users/{id}/restore` |
+| Spaces | `GET/POST /api/v1/spaces`，`GET/PATCH /api/v1/spaces/{id}`，`POST /api/v1/spaces/{id}/disable`，`POST /api/v1/spaces/{id}/restore` |
+| Space 嵌套对象 | `/api/v1/spaces/{space_id}/groups`、`/members`、`/user-members`、`/roles`、`/member-roles`、`/member-role-grants`、`/resources`、`/audit-logs` |
+| Direct details | `GET /api/v1/groups/{id}`、`GET /api/v1/members/{id}`、`GET /api/v1/user-members/{id}`、`GET /api/v1/roles/{id}` |
+| Permissions | `GET/POST /api/v1/permissions`、`GET/PATCH /api/v1/permissions/{id}`、`POST /api/v1/permissions/{id}/disable` |
+| Role permissions | `GET/POST /api/v1/role-permissions`、`GET/DELETE /api/v1/role-permissions/{id}` |
+| Resources | `GET/POST /api/v1/resources`、`GET /api/v1/resources/{resource_type}/{resource_id}` |
+| Plugins | `POST /api/v1/plugins/validate-manifest`、`POST /api/v1/plugins/install`、`GET /api/v1/plugins`、`GET /api/v1/plugins/{key}`、lifecycle 和 metadata subroutes |
+| Templates | `GET /api/v1/templates`、`GET /api/v1/templates/{id}`、`POST /api/v1/templates/{id}/preview-install`、`POST /api/v1/templates/{id}/install` |
+
+User 响应已做脱敏，不返回 `password_hash`。
+
+## Data Console preview 路由
+
+Data Console 不是 v1.0 blocking surface，默认关闭：
+
+```text
+DATA_CONSOLE_ENABLED=false
+```
+
+启用并通过 admin token 保护后：
+
+| Method | Path |
+|---|---|
+| `GET` | `/api/v1/data/tables` |
+| `GET/POST` | `/api/v1/data/rows/{resource_type}` |
+| `GET/PATCH/DELETE` | `/api/v1/data/rows/{resource_type}/{resource_id}` |
+
+当前 mutation 只支持 Core `resources` 表支持的 `internal_table` mapping。Mutation 会运行授权检查，并返回变更后的 row 和 authorization decision。
+
+## Metrics
+
+Metrics 默认关闭：
+
+```text
+METRICS_ENABLED=false
+```
+
+启用后，`/metrics` 返回 Prometheus text，并要求 metrics token 或 admin token。

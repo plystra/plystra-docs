@@ -1,39 +1,22 @@
-# Starlight Starter Kit: Basics
+# Plystra Docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Documentation site for Plystra Core v1.0.
 
-```
-npm create astro@latest -- --template starlight
-```
+The default language is English at `/`. Simplified Chinese is available under `/zh/`.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Source of Truth
 
-## 🚀 Project Structure
+Write documentation against the current business logic in the sibling `../plystra` repository:
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+- HTTP routes and middleware: `../plystra/internal/api`
+- Authz semantics: `../plystra/internal/authz`
+- Ent schema: `../plystra/ent/schema`
+- Migrations: `../plystra/migrations`
+- Release docs: `../plystra/docs/release`
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+## Commands
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
-
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
-
-Static assets, like favicons, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
+Run commands from this directory:
 
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
@@ -42,8 +25,3 @@ All commands are run from the root of the project, from a terminal:
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).

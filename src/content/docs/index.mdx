@@ -1,40 +1,42 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: Plystra Core
+description: Self-hosted identity and authorization core for explainable business permissions.
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Self-hosted identity and authorization core for applications that need account-identity separation, scoped resource permissions, and append-only audit logs.
   image:
     file: ../../assets/houston.webp
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Quickstart
+      link: /getting-started/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+    - text: View on GitHub
+      link: https://github.com/plystra/plystra
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## What Plystra v1.0 Covers
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+	<Card title="Explainable identity" icon="user">
+		Every authorization decision explains the `User -> UserMember -> Member -> Space` path that acted.
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="Scoped permissions" icon="setting">
+		Permissions are evaluated against `self`, `group`, `group_tree`, and `space` scope rules. `global` is reserved and disabled in v1.0.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="Resource Registry" icon="document">
+		Resource types, actions, mappings, risk levels, and audit defaults are stored as governed metadata.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
+	<Card title="Append-only audit" icon="open-book">
+		Allow and deny decisions write trace snapshots that remain readable after metadata changes.
 	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Self-hosted Core" icon="rocket">
+		PostgreSQL, versioned migrations, Ent schema checks, Docker Compose, and production safety guards are part of the Core.
+	</Card>
+	<Card title="Protected API surface" icon="lock">
+		Non-public Core APIs require the bootstrap admin token. Data Console and metrics are disabled by default.
 	</Card>
 </CardGrid>
