@@ -7,9 +7,13 @@ hero:
   image:
     file: ../../assets/houston.webp
   actions:
+    - text: Integrate Your App
+      link: /guides/integrate-your-app/
+      icon: right-arrow
     - text: Quickstart
       link: /getting-started/
-      icon: right-arrow
+      icon: rocket
+      variant: minimal
     - text: View on GitHub
       link: https://github.com/plystra/plystra
       icon: external
@@ -17,6 +21,26 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Start Here
+
+If you are adding Plystra to an existing backend, start with the integration guide. It gives you the concrete object model, API calls, and backend guard code for the full path:
+
+```text
+register resource type -> create Space and identities -> grant role -> register resource -> call authz/check
+```
+
+<CardGrid>
+	<Card title="Integrate an app" icon="right-arrow" href="/guides/integrate-your-app/">
+		Create the exact Plystra records needed to protect a business endpoint, then call `/api/v1/authz/check` from your backend.
+	</Card>
+	<Card title="Run locally first" icon="rocket" href="/getting-started/">
+		Start Core, apply migrations, run the Finance demo, and verify the v1.0 release checks.
+	</Card>
+	<Card title="Check the API surface" icon="document" href="/guides/http-api/">
+		Review response envelopes, authentication layers, protected routes, and endpoint groups.
+	</Card>
+</CardGrid>
 
 ## What Plystra v1.0 Covers
 

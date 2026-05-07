@@ -70,6 +70,8 @@ demo 会打印四个必需 trace：
 | Bob 通过同一个 Member 审批 | `allow` | 多个 User 可以通过同一个 Member 身份行动。 |
 | Alice 使用 revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` 是有效授权桥。 |
 
+如果 demo 输出正确，下一步直接看 [接入你的应用](/zh/guides/integrate-your-app/)。那篇会把同一套模型变成可复制的 API 请求，用于创建你自己的 Space、身份链、资源、角色和后端授权保护。
+
 ## 启动 API
 
 ```bash
@@ -96,6 +98,8 @@ curl -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
 ```
 
 admin-token 保护的路由也接受 `Authorization: Bearer <token>`。Session endpoints 使用独立的 opaque bearer-token 流程。
+
+如果你要完成一条真实业务接入路径，建议直接看 [接入你的应用](/zh/guides/integrate-your-app/)，不用自己从零拼每个 endpoint。
 
 ## 登录流程
 

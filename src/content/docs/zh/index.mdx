@@ -7,9 +7,13 @@ hero:
   image:
     file: ../../../assets/houston.webp
   actions:
+    - text: 接入你的应用
+      link: /zh/guides/integrate-your-app/
+      icon: right-arrow
     - text: 快速开始
       link: /zh/getting-started/
-      icon: right-arrow
+      icon: rocket
+      variant: minimal
     - text: GitHub
       link: https://github.com/plystra/plystra
       icon: external
@@ -17,6 +21,26 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## 从这里开始
+
+如果你要把 Plystra 接到现有后端，先看接入指南。它会用真实 API 带你走完整路径：
+
+```text
+注册资源类型 -> 创建 Space 和身份链 -> 授权角色 -> 登记资源 -> 调用 authz/check
+```
+
+<CardGrid>
+	<Card title="接入现有应用" icon="right-arrow" href="/zh/guides/integrate-your-app/">
+		创建保护业务接口所需的 Plystra 记录，然后在你的后端调用 `/api/v1/authz/check`。
+	</Card>
+	<Card title="先本地跑通" icon="rocket" href="/zh/getting-started/">
+		启动 Core、应用迁移、运行 Finance demo，并验证 v1.0 release checks。
+	</Card>
+	<Card title="查看 API 面" icon="document" href="/zh/guides/http-api/">
+		查看响应 envelope、认证层、受保护路由和 endpoint 分组。
+	</Card>
+</CardGrid>
 
 ## Plystra v1.0 覆盖范围
 

@@ -70,6 +70,8 @@ The demo prints four required traces:
 | Bob approves through the same Member | `allow` | Multiple Users can act through the same Member identity. |
 | Alice uses a revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` is the active authorization bridge. |
 
+If this demo output looks correct, the fastest next step is [Integrate Your App](/guides/integrate-your-app/). That guide turns this same model into copy-paste API calls for your own Space, identities, resources, roles, and backend guard.
+
 ## Start the API
 
 ```bash
@@ -96,6 +98,8 @@ curl -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
 ```
 
 The same token can also be passed as `Authorization: Bearer <token>` for admin-token protected routes. Session endpoints use a separate opaque bearer-token flow.
+
+For an end-to-end business integration, use [Integrate Your App](/guides/integrate-your-app/) instead of assembling the individual endpoint calls from scratch.
 
 ## Login Flow
 

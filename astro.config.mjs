@@ -19,6 +19,7 @@ export default defineConfig({
 					translations: { zh: '开始' },
 					items: [
 						{ label: 'Quickstart', translations: { zh: '快速开始' }, slug: 'getting-started' },
+						{ label: 'Integrate Your App', translations: { zh: '接入你的应用' }, slug: 'guides/integrate-your-app' },
 					],
 				},
 				{
@@ -32,8 +33,8 @@ export default defineConfig({
 					label: 'Guides',
 					translations: { zh: '指南' },
 					items: [
-						{ label: 'Self-hosting', translations: { zh: '自托管部署' }, slug: 'guides/self-hosting' },
 						{ label: 'HTTP API', translations: { zh: 'HTTP API' }, slug: 'guides/http-api' },
+						{ label: 'Self-hosting', translations: { zh: '自托管部署' }, slug: 'guides/self-hosting' },
 					],
 				},
 				{

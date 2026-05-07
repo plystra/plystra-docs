@@ -4,6 +4,15 @@ Documentation site for Plystra Core v1.0.
 
 The default language is English at `/`. Simplified Chinese is available under `/zh/`.
 
+## Reader Path
+
+The docs are organized for integration first:
+
+1. `Getting Started`: run Core locally and verify the Finance demo.
+2. `Integrate Your App`: create the required Plystra records and protect a real backend endpoint with `/api/v1/authz/check`.
+3. `HTTP API`: check route groups, authentication layers, envelopes, and feature flags.
+4. `Reference`: configuration, database/migration rules, and release readiness.
+
 ## Source of Truth
 
 Write documentation against the current business logic in the sibling `../plystra` repository:
