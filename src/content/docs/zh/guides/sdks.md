@@ -1,0 +1,323 @@
+---
+title: SDK
+description: 使用 TypeScript、JavaScript、Python、Go 和插件工具接入 Plystra Core v1.0。
+---
+
+Plystra SDK 封装了 v1.0 HTTP API envelope、Bearer session、管理员授权、授权检查和常用 Core 管理端点。
+
+SDK 应该放在可信服务端代码中使用。不要把管理 access token 放进浏览器或移动端。
+
+## 包名
+
+| 语言 | 包名 | 仓库 | 主客户端 |
+|---|---|---|---|
+| TypeScript/JavaScript | `@plystra/sdk` | `plystra/plystra-js` | `PlystraClient` |
+| Python | `plystra` | `plystra/pyplystra` | `Plystra`, `AsyncPlystra` |
+| Go | `github.com/plystra/go-plystra` | `plystra/go-plystra` | `plystra.Client` |
+| 插件作者 | `@plystra/plugin-sdk` | `plystra/plystra-plugin-sdk` | `validateManifestForCore` |
+
+所有管理模块都需要 Bearer session，并且该 session 对应的用户必须拥有有效管理员授权。
+
+## TypeScript 和 JavaScript
+
+安装：
+
+```bash
+npm install @plystra/sdk
+```
+
+登录并执行授权检查：
+
+```ts
+import { PlystraClient } from "@plystra/sdk";
+
+const plystra = new PlystraClient({
+  baseUrl: "http://localhost:8080",
+});
+
+await plystra.auth.login({
+  email: "alice@example.com",
+  password: "plystra-demo",
+});
+
+const decision = await plystra.authz.check({
+  actor: {
+    user_id: "user_alice",
+    space_id: "space_acme",
+    member_id: "member_finance_reviewer",
+    user_member_id: "um_alice_finance_reviewer",
+  },
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
+});
+
+if (decision.decision !== "allow") {
+  throw new Error(`Denied: ${decision.deny_code}`);
+}
+```
+
+创建管理员授权：
+
+```ts
+await plystra.admin.createGrant({
+  user_id: "user_ops",
+  level: "space_admin",
+  space_id: "space_acme",
+  permission_key: "users:read",
+});
+```
+
+常用模块：
+
+```ts
+await plystra.actor.context();
+await plystra.admin.me();
+await plystra.users.list({ limit: 50 });
+await plystra.spaces.groups("space_acme");
+await plystra.resources.get("invoice", "invoice_001");
+await plystra.audit.list({ space_id: "space_acme" });
+await plystra.plugins.validateManifest(manifest);
+```
+
+错误处理：
+
+```ts
+import { PlystraApiError } from "@plystra/sdk";
+
+try {
+  await plystra.users.get("missing_user");
+} catch (error) {
+  if (error instanceof PlystraApiError) {
+    console.error(error.status, error.code, error.requestId);
+  }
+}
+```
+
+## Python
+
+安装：
+
+```bash
+pip install plystra
+```
+
+同步客户端：
+
+```python
+from plystra import Plystra
+
+with Plystra("http://localhost:8080") as plystra:
+    plystra.auth.login("alice@example.com", "plystra-demo")
+
+    decision = plystra.authz.check(
+        actor={
+            "user_id": "user_alice",
+            "space_id": "space_acme",
+            "member_id": "member_finance_reviewer",
+            "user_member_id": "um_alice_finance_reviewer",
+        },
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+
+    print(decision["decision"])
+```
+
+异步客户端：
+
+```python
+import asyncio
+from plystra import AsyncPlystra
+
+
+async def main() -> None:
+    async with AsyncPlystra("http://localhost:8080") as plystra:
+        await plystra.auth.login("alice@example.com", "plystra-demo")
+        decision = await plystra.authz.check(
+            actor={
+                "user_id": "user_alice",
+                "space_id": "space_acme",
+                "member_id": "member_finance_reviewer",
+                "user_member_id": "um_alice_finance_reviewer",
+            },
+            resource_type="invoice",
+            resource_id="invoice_001",
+            action="approve",
+        )
+        print(decision["decision"])
+
+
+asyncio.run(main())
+```
+
+需要自定义代理、重试、测试 mock 或 transport 时，可以传入自己的 `httpx` client：
+
+```python
+import httpx
+from plystra import Plystra
+
+transport = httpx.HTTPTransport(retries=2)
+http = httpx.Client(transport=transport, timeout=5.0)
+
+with Plystra("https://plystra.internal", client=http) as plystra:
+    plystra.set_access_token("server-side-access-token")
+    print(plystra.admin.me())
+```
+
+错误处理：
+
+```python
+from plystra import Plystra, PlystraAPIError
+
+try:
+    with Plystra("http://localhost:8080") as plystra:
+        plystra.users.get("missing_user")
+except PlystraAPIError as exc:
+    print(exc.status_code, exc.code, exc.request_id)
+```
+
+## Go
+
+安装：
+
+```bash
+go get github.com/plystra/go-plystra
+```
+
+使用客户端：
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	plystra "github.com/plystra/go-plystra"
+)
+
+func main() {
+	ctx := context.Background()
+	client := plystra.NewClient("http://localhost:8080")
+
+	if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
+		log.Fatal(err)
+	}
+
+	decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+		Actor: plystra.ActorContext{
+			UserID:       "user_alice",
+			SpaceID:      "space_acme",
+			MemberID:     "member_finance_reviewer",
+			UserMemberID: "um_alice_finance_reviewer",
+		},
+		ResourceType: "invoice",
+		ResourceID:   "invoice_001",
+		Action:       "approve",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(decision["decision"])
+}
+```
+
+复用服务端 access token：
+
+```go
+client := plystra.NewClient(
+	"https://plystra.internal",
+	plystra.WithAccessToken(os.Getenv("PLYSTRA_ACCESS_TOKEN")),
+)
+
+me, err := client.Admin.Me(ctx)
+```
+
+错误处理：
+
+```go
+var apiErr *plystra.APIError
+if errors.As(err, &apiErr) {
+	log.Printf("plystra error: status=%d code=%s request_id=%s", apiErr.StatusCode, apiErr.Code, apiErr.RequestID)
+}
+```
+
+## Plugin SDK
+
+安装：
+
+```bash
+npm install -D @plystra/plugin-sdk
+```
+
+创建并校验插件 manifest：
+
+```bash
+npx plystra-plugin init webhooks
+npx plystra-plugin validate ./webhooks/plugin.json
+```
+
+在 JavaScript 中校验：
+
+```js
+import { validateManifestForCore } from "@plystra/plugin-sdk";
+
+const errors = validateManifestForCore(manifest, "1.0.0");
+if (errors.length > 0) {
+  throw new Error(errors.join("\n"));
+}
+```
+
+插件校验器与 Plystra Core v1.0 manifest 校验保持一致：reverse-DNS 插件 id、语义化版本格式、`requires_core`、manifest/API version `1.0`、重复 resource/action、permission 引用、audit event key、admin menu path，以及禁用的 `global` scope。
+
+## 管理员授权模型
+
+SDK 管理接口使用和 HTTP API 一致的管理员授权模型：
+
+| Level | 范围 | 用途 |
+|---|---|---|
+| `instance_super_admin` | 整个实例 | Bootstrap、分配 instance admin。 |
+| `instance_admin` | 整个实例 | 按 permission key 执行实例级操作。 |
+| `space_admin` | 单个 Space | Space 内用户、组、角色、资源、审计日志。 |
+| `group_admin` | 单个 Group 子树 | Group 范围内资源和子组。 |
+
+Permission key 使用 `domain:action`。`domain:*` 覆盖该 domain 的所有动作，`domain:manage` 也覆盖 `domain:read`。
+
+常用 permission key：
+
+```text
+instance:read
+admin_grants:read
+admin_grants:manage
+authz:check
+audit:read
+users:read
+users:manage
+spaces:read
+spaces:manage
+groups:read
+groups:manage
+members:read
+members:manage
+user_members:read
+user_members:manage
+roles:read
+roles:manage
+permissions:read
+permissions:manage
+registry:read
+registry:manage
+resources:read
+resources:manage
+data:read
+data:manage
+plugins:read
+plugins:manage
+templates:read
+templates:manage
+metrics:read
+```
