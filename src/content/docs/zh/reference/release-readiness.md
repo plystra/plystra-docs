@@ -17,7 +17,7 @@ Plystra Core v1.0 的范围是稳定自托管 Core。
 - 版本化 PostgreSQL migrations。
 - Core CRUD HTTP API。
 - Auth session flow。
-- 非公开路由的 admin token protection。
+- 非公开路由的 Bearer user session protection。
 - Docker self-hosting baseline。
 - OpenAPI v1.0 artifacts。
 - Finance Reviewer demo。
@@ -36,17 +36,17 @@ Plystra Core v1.0 的范围是稳定自托管 Core。
 - enterprise SSO。
 - advanced policy language。
 
-当前代码中存在 plugin、template、Data Console 的 preview metadata routes。敏感路由均受 admin-token 保护，Data Console 默认关闭。
+当前代码中存在 plugin、template、Data Console 的 preview metadata routes。敏感路由均需要拥有 active admin grant 的用户 Bearer session，Data Console 默认关闭。
 
 ## 安全 gates
 
 当前 v1.0 行为包含：
 
-- 非公开 API 路由需要 `PLYSTRA_ADMIN_TOKEN`。
+- 非公开 API 路由需要拥有 active admin grant 的用户 Bearer session。
 - AuditLog 和 console overview 被保护。
 - Data Console routes 默认返回 `FEATURE_DISABLED`。
 - `/metrics` 默认返回 `FEATURE_DISABLED`。
-- metrics 启用后需要 metrics token 或 admin token。
+- metrics 启用后需要 metrics token 或 Bearer user session。
 - 生产模式拒绝 wildcard CORS。
 - 生产模式拒绝默认数据库凭据和 placeholder secrets。
 - User API 响应和 mutation audit details 不暴露 `password_hash`。
@@ -70,7 +70,7 @@ HTTP smoke tests 应覆盖：
 
 - 公开 health、ready、version。
 - 未认证访问敏感路由返回 `401`。
-- admin token 可以访问 AuditLog 和 Core CRUD。
+- Bearer user session 可以访问 AuditLog 和 Core CRUD。
 - `authz/check` allow 和 deny 场景。
 - `authz/explain` 包含 matched candidates 和 scope checks。
 - Data Console 和 metrics 默认关闭。

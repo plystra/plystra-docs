@@ -21,7 +21,7 @@ go run .\cmd\plystrad
 ## API 检查
 
 - health / ready / version 返回正常。
-- 未带 admin token 的敏感 API 返回 401。
-- 带 admin token 后 users/spaces/resource-types/audit-logs 可读取。
+- 未带 Bearer user session 的敏感 API 返回 401。
+- 带 Bearer user session 后 users/spaces/resource-types/audit-logs 可读取。
 - `authz/explain` 返回 allow/deny trace。
 - audit log 写入 allow 与 deny。

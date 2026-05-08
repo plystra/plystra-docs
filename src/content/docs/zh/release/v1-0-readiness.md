@@ -12,7 +12,7 @@ v1.0 的目标是稳定、自托管、可解释的 Core，而不是完整 SaaS �
 - Resource Registry。
 - authz check/explain。
 - 追加式 audit log。
-- admin token 保护非公开 API。
+- Bearer user session 保护非公开 API。
 - Docker Compose 本地运行。
 - migration verify、Ent check、doctor、Go tests 通过。
 

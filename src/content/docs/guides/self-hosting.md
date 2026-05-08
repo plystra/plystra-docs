@@ -27,7 +27,7 @@ Important Compose variables:
 | `SERVER_PORT` | `8080` | Host port for Core. |
 | `DOCKER_DATABASE_URL` | Compose PostgreSQL URL | Database URL used by the container. |
 | `CORS_ALLOWED_ORIGINS` | `*` in Compose fallback | Development-friendly fallback. Production mode rejects wildcard CORS. |
-| `PLYSTRA_ADMIN_TOKEN` | development placeholder | Bootstrap token for protected routes. |
+| `PLYSTRA_SESSION_SECRET` | development placeholder | Secret used to HMAC opaque session tokens. |
 | `DATA_CONSOLE_ENABLED` | `false` | Keeps preview data routes disabled. |
 | `METRICS_ENABLED` | `false` | Keeps `/metrics` disabled. |
 
@@ -76,11 +76,27 @@ When `SERVER_MODE=production`, startup validates:
 |---|---|
 | `DATABASE_URL` or `PLYSTRA_DATABASE_URL` | Required; must not use default `plystra:plystra` credentials. |
 | `PLYSTRA_SESSION_SECRET`, `SESSION_SECRET`, `JWT_SECRET`, or `PLYSTRA_JWT_SECRET` | At least 32 characters and not a default placeholder. |
-| `PLYSTRA_ADMIN_TOKEN` or `ADMIN_TOKEN` | At least 32 characters and not a default placeholder. |
 | `CORS_ALLOWED_ORIGINS` | Required; must not include `*`. |
 | `SERVER_PUBLIC_URL` or `PLYSTRA_SERVER_PUBLIC_URL` | Required; must not point to localhost. |
 
 `JWT_SECRET` is a compatibility alias. The current runtime uses opaque bearer tokens, stores HMAC token hashes, and does not issue JWT claims.
+
+## First Instance Super Admin
+
+Core management APIs use the same User/session system as the rest of Plystra. The first administrator is an `AdminGrant` with:
+
+```text
+level = instance_super_admin
+permission_key = *
+```
+
+The local demo migration creates this grant for Alice. On a non-demo database, create the first super admin after migrations and before exposing the service:
+
+```bash
+go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
+```
+
+The command refuses to run if an active instance super admin already exists. After bootstrap, sign in as that user and create additional admins through `/api/v1/admin/grants`.
 
 ## Reverse Proxy and Client IPs
 

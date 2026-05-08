@@ -40,27 +40,35 @@ User -> UserMember -> Member -> Space
 
 ## 0. 设置客户端变量
 
-本地开发时，使用 `.env` 里的 admin token：
+本地开发时，先用种子数据中的 Alice super admin 登录，然后导出返回的 access token：
 
 ```bash
 export PLYSTRA_URL=http://localhost:8080
-export PLYSTRA_ADMIN_TOKEN=change-me-admin-token-at-least-32-characters
+export PLYSTRA_ACCESS_TOKEN=$(
+  curl -s -X POST "$PLYSTRA_URL/api/v1/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"alice@example.com","password":"plystra-demo"}' |
+  jq -r '.data.access_token'
+)
 ```
 
 PowerShell：
 
 ```powershell
 $env:PLYSTRA_URL = "http://localhost:8080"
-$env:PLYSTRA_ADMIN_TOKEN = "change-me-admin-token-at-least-32-characters"
+$login = curl.exe -s -X POST "$env:PLYSTRA_URL/api/v1/auth/login" `
+  -H "Content-Type: application/json" `
+  -d '{"email":"alice@example.com","password":"plystra-demo"}' | ConvertFrom-Json
+$env:PLYSTRA_ACCESS_TOKEN = $login.data.access_token
 ```
 
 下面所有管理 API 都需要：
 
 ```text
-X-Plystra-Admin-Token: <PLYSTRA_ADMIN_TOKEN>
+Authorization: Bearer <access_token>
 ```
 
-这个 token 只能放在服务端，不能暴露给浏览器或移动端。
+这个管理 session 只能放在服务端，不能暴露给浏览器或移动端。
 
 本文里的创建请求适合在干净的本地开发数据库中跑一次。如果重复执行并收到 `409 Conflict`，说明记录已经存在；继续使用已有记录，或者换一组示例 ID。
 
@@ -71,7 +79,7 @@ X-Plystra-Admin-Token: <PLYSTRA_ADMIN_TOKEN>
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/authz/check" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -90,7 +98,7 @@ PowerShell：
 ```powershell
 curl.exe -s -X POST "$env:PLYSTRA_URL/api/v1/authz/check" `
   -H "Content-Type: application/json" `
-  -H "X-Plystra-Admin-Token: $env:PLYSTRA_ADMIN_TOKEN" `
+  -H "Authorization: Bearer $env:PLYSTRA_ACCESS_TOKEN" `
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -124,7 +132,7 @@ curl.exe -s -X POST "$env:PLYSTRA_URL/api/v1/authz/check" `
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rt_expense_report",
     "key": "expense_report",
@@ -138,7 +146,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/actions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "ra_expense_report_approve",
     "key": "approve",
@@ -153,7 +161,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/actions" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/mapping" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rm_expense_report_internal",
     "storage_kind": "internal_table",
@@ -175,7 +183,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/mapping" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "space_contoso",
     "name": "Contoso",
@@ -190,7 +198,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "group_contoso_finance",
     "name": "Finance",
@@ -203,7 +211,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "group_contoso_finance_apac",
     "parent_group_id": "group_contoso_finance",
@@ -223,7 +231,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/users" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "user_docs_alice",
     "email": "alice@example.com",
@@ -236,7 +244,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/users" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/members" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "member_docs_finance_reviewer",
     "display_name": "Finance Reviewer",
@@ -250,7 +258,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/members" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/user-members" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "um_docs_alice_finance_reviewer",
     "user_id": "user_docs_alice",
@@ -270,7 +278,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/user-members" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/permissions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "perm_expense_report_approve_group_tree",
     "resource": "expense_report",
@@ -286,7 +294,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/permissions" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/roles" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "role_contoso_finance_approver",
     "key": "finance_approver",
@@ -301,7 +309,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/roles" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/role-permissions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rp_contoso_finance_approver_expense_report_approve",
     "role_id": "role_contoso_finance_approver",
@@ -315,7 +323,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/role-permissions" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/member-roles" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "mr_docs_finance_reviewer_approver_finance",
     "member_id": "member_docs_finance_reviewer",
@@ -332,7 +340,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/member-roles" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/resources" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "expense_report_001",
     "resource_type": "expense_report",
@@ -369,7 +377,7 @@ async function requirePlystraAllow(input: {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Plystra-Admin-Token": process.env.PLYSTRA_ADMIN_TOKEN!,
+      Authorization: `Bearer ${process.env.PLYSTRA_ACCESS_TOKEN!}`,
     },
     body: JSON.stringify({
       actor: {
@@ -474,14 +482,14 @@ type AuthzEnvelope struct {
 
 ```bash
 curl -s "$PLYSTRA_URL/api/v1/spaces/space_contoso/audit-logs?resource_type=expense_report&resource_id=expense_report_001" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN"
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN"
 ```
 
 AuditLog 保存 actor user、member、user-member binding、action、resource、decision、deny code、request ID、服务端解析出的 IP/User-Agent，以及 trace JSON。
 
 ## 生产接入规则
 
-- `PLYSTRA_ADMIN_TOKEN` 只能放在服务端。浏览器客户端应调用你的后端，而不是直接调用 Plystra 管理 API。
+- 管理 access token 只能放在服务端。浏览器客户端应调用你的后端，而不是直接调用 Plystra 管理 API。
 - 即使登录由你的应用负责，也建议创建 Plystra `User`，这样审计 trace 能还原真实账号。
 - 用户选择业务身份后，在你的 session 中保存 active `member_id`、`user_member_id` 和 `space_id`。
 - 在受保护业务 mutation 前调用 `/api/v1/authz/check`。

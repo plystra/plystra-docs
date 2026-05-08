@@ -29,7 +29,6 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
-| `PLYSTRA_ADMIN_TOKEN` / `ADMIN_TOKEN` | 开发 placeholder | 非公开 Core API 的 bootstrap token。生产至少 32 字符。 |
 | `PLYSTRA_SESSION_SECRET` / `SESSION_SECRET` | 开发 placeholder | HMAC hashing opaque bearer tokens 的推荐 secret。 |
 | `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | 兼容 placeholder | session secret 的兼容 alias。Core v1.0 不签发 JWT claims。 |
 | `TRUSTED_PROXIES` | 空 | 为已知代理启用可信 forwarded IP 解析。 |
@@ -60,7 +59,7 @@ AuditLog 是 append-only。生产部署应定义 retention 和 export 策略。
 |---|---|---|
 | `DATA_CONSOLE_ENABLED` | `false` | 显式启用 `/api/v1/data/*` preview routes。 |
 | `METRICS_ENABLED` | `false` | 显式启用 `/metrics`。 |
-| `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN` | 空 | `/metrics` token。启用 metrics 但为空时接受 admin token。 |
+| `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN` | 空 | `/metrics` token。启用 metrics 但为空时接受拥有 `metrics:read` 的 Bearer session。 |
 
 被关闭的 feature routes 返回 `FEATURE_DISABLED`。
 
@@ -70,6 +69,5 @@ AuditLog 是 append-only。生产部署应定义 retention 和 export 策略。
 
 - database URL 缺失或使用默认开发凭据。
 - session secret 缺失、过短或为 placeholder。
-- admin token 缺失、过短或为 placeholder。
 - CORS origins 缺失或包含 `*`。
 - public URL 缺失或指向 localhost。

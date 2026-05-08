@@ -27,7 +27,7 @@ docker compose up -d
 | `SERVER_PORT` | `8080` | Core 对外端口。 |
 | `DOCKER_DATABASE_URL` | Compose PostgreSQL URL | 容器内连接数据库使用。 |
 | `CORS_ALLOWED_ORIGINS` | Compose fallback 为 `*` | 开发友好默认值。生产模式会拒绝 wildcard CORS。 |
-| `PLYSTRA_ADMIN_TOKEN` | 开发 placeholder | 受保护路由的 bootstrap token。 |
+| `PLYSTRA_SESSION_SECRET` | 开发 placeholder | 用于 HMAC opaque session token 的 secret。 |
 | `DATA_CONSOLE_ENABLED` | `false` | 默认关闭 preview data routes。 |
 | `METRICS_ENABLED` | `false` | 默认关闭 `/metrics`。 |
 
@@ -76,11 +76,27 @@ readiness endpoint 会检查数据库连接和预期 migration/schema 状态。
 |---|---|
 | `DATABASE_URL` 或 `PLYSTRA_DATABASE_URL` | 必填；不能使用默认 `plystra:plystra` 凭据。 |
 | `PLYSTRA_SESSION_SECRET`、`SESSION_SECRET`、`JWT_SECRET` 或 `PLYSTRA_JWT_SECRET` | 至少 32 字符，不能是默认 placeholder。 |
-| `PLYSTRA_ADMIN_TOKEN` 或 `ADMIN_TOKEN` | 至少 32 字符，不能是默认 placeholder。 |
 | `CORS_ALLOWED_ORIGINS` | 必填；不能包含 `*`。 |
 | `SERVER_PUBLIC_URL` 或 `PLYSTRA_SERVER_PUBLIC_URL` | 必填；不能指向 localhost。 |
 
 `JWT_SECRET` 是兼容 alias。当前 runtime 使用 opaque bearer token，存储 HMAC token hash，不签发 JWT claims。
+
+## 第一个 Instance Super Admin
+
+Core 管理 API 使用和业务授权一致的 User/session 体系。第一个管理员是一个 `AdminGrant`：
+
+```text
+level = instance_super_admin
+permission_key = *
+```
+
+本地 demo migration 已经给 Alice 创建了该 grant。非 demo 数据库可在迁移完成后、服务暴露前执行：
+
+```bash
+go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
+```
+
+如果系统里已经存在 active instance super admin，这个命令会拒绝执行。完成 bootstrap 后，用该用户登录，再通过 `/api/v1/admin/grants` 创建更多管理员。
 
 ## 反向代理与客户端 IP
 

@@ -68,10 +68,10 @@ Errors:
 |---|---|---|
 | Public operational routes | health, ready, version | No token required. |
 | Session auth | login, refresh, logout, actor context, switch-member | Uses login credentials and opaque bearer tokens stored as HMAC hashes. |
-| Admin bootstrap protection | non-public Core APIs | Requires `X-Plystra-Admin-Token`, `X-Admin-Token`, or `Authorization: Bearer <admin-token>`. |
-| Metrics token | `/metrics` when enabled | Requires `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`, or admin token fallback. |
+| Admin grant protection | non-public Core APIs | Requires `Authorization: Bearer <access_token>` for a user with an active admin grant. |
+| Metrics token | `/metrics` when enabled | Requires `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`, or a Bearer session with `metrics:read`. |
 
-If a protected route is called with no configured admin token, Core returns `ADMIN_TOKEN_NOT_CONFIGURED`. If a token is configured but missing or invalid, Core returns `ADMIN_TOKEN_REQUIRED`.
+If a protected route is called without a valid session, Core returns `AUTHENTICATION_REQUIRED`. If the session user lacks the needed admin grant, Core returns `ADMIN_PERMISSION_REQUIRED`.
 
 ## Public Routes
 
@@ -118,7 +118,7 @@ Example:
 ```bash
 curl -X POST http://localhost:8080/api/v1/authz/check \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -136,10 +136,11 @@ HTTP authz ignores client-supplied body `request_id`, `ip`, and `user_agent`; ca
 
 ## Core Management Routes
 
-All routes in this section require the admin token.
+All routes in this section require `Authorization: Bearer <access_token>` and an active admin grant. `instance_super_admin` allows everything. `instance_admin` is permission-key scoped, `space_admin` is limited to one Space, and `group_admin` is limited to one Group subtree.
 
 | Group | Routes |
 |---|---|
+| Admin grants | `GET /api/v1/admin/me`, `GET/POST /api/v1/admin/grants`, `GET /api/v1/admin/grants/{id}`, `POST /api/v1/admin/grants/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
 | AuditLog | `GET /api/v1/audit-logs`, `GET /api/v1/audit-logs/{id}`, legacy `/api/v1/audit/logs` aliases |
 | Resource Registry | `GET/POST /api/v1/resource-types`, `GET /api/v1/resource-types/{key}`, `GET/POST /api/v1/resource-types/{key}/actions`, `GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
@@ -181,4 +182,4 @@ Metrics are disabled by default:
 METRICS_ENABLED=false
 ```
 
-When enabled, `/metrics` returns Prometheus text and requires a metrics token or admin token.
+When enabled, `/metrics` returns Prometheus text and requires a metrics token or a Bearer session with `metrics:read`.

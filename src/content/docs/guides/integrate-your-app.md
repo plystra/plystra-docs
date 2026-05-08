@@ -40,27 +40,35 @@ Your backend should send that actor tuple to Plystra when it protects a business
 
 ## 0. Set Client Variables
 
-For local development, use the admin token from `.env`:
+For local development, login as the seeded Alice super admin and export the returned access token:
 
 ```bash
 export PLYSTRA_URL=http://localhost:8080
-export PLYSTRA_ADMIN_TOKEN=change-me-admin-token-at-least-32-characters
+export PLYSTRA_ACCESS_TOKEN=$(
+  curl -s -X POST "$PLYSTRA_URL/api/v1/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"alice@example.com","password":"plystra-demo"}' |
+  jq -r '.data.access_token'
+)
 ```
 
 PowerShell:
 
 ```powershell
 $env:PLYSTRA_URL = "http://localhost:8080"
-$env:PLYSTRA_ADMIN_TOKEN = "change-me-admin-token-at-least-32-characters"
+$login = curl.exe -s -X POST "$env:PLYSTRA_URL/api/v1/auth/login" `
+  -H "Content-Type: application/json" `
+  -d '{"email":"alice@example.com","password":"plystra-demo"}' | ConvertFrom-Json
+$env:PLYSTRA_ACCESS_TOKEN = $login.data.access_token
 ```
 
 All management APIs below require:
 
 ```text
-X-Plystra-Admin-Token: <PLYSTRA_ADMIN_TOKEN>
+Authorization: Bearer <access_token>
 ```
 
-Keep this token on your server side only. Do not expose it to browsers or mobile clients.
+Keep this management session server-side only. Do not expose it to browsers or mobile clients.
 
 The create calls in this guide are meant for a fresh local development database. If you run them again and receive `409 Conflict`, the record already exists; keep using the existing record or change the example IDs.
 
@@ -71,7 +79,7 @@ Run the API server, then call the built-in Finance demo decision:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/authz/check" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -90,7 +98,7 @@ PowerShell:
 ```powershell
 curl.exe -s -X POST "$env:PLYSTRA_URL/api/v1/authz/check" `
   -H "Content-Type: application/json" `
-  -H "X-Plystra-Admin-Token: $env:PLYSTRA_ADMIN_TOKEN" `
+  -H "Authorization: Bearer $env:PLYSTRA_ACCESS_TOKEN" `
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -124,7 +132,7 @@ Create the business object type and actions your app wants to protect. This exam
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rt_expense_report",
     "key": "expense_report",
@@ -138,7 +146,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/actions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "ra_expense_report_approve",
     "key": "approve",
@@ -153,7 +161,7 @@ If you use the built-in `resources` table to mirror external objects, register t
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/resource-types/expense_report/mapping" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rm_expense_report_internal",
     "storage_kind": "internal_table",
@@ -175,7 +183,7 @@ Create the tenant or workspace:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "space_contoso",
     "name": "Contoso",
@@ -190,7 +198,7 @@ Create an authorization tree:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "group_contoso_finance",
     "name": "Finance",
@@ -203,7 +211,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/groups" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "group_contoso_finance_apac",
     "parent_group_id": "group_contoso_finance",
@@ -223,7 +231,7 @@ Create the login identity:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/users" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "user_docs_alice",
     "email": "alice@example.com",
@@ -236,7 +244,7 @@ Create the business actor inside the Space:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/members" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "member_docs_finance_reviewer",
     "display_name": "Finance Reviewer",
@@ -250,7 +258,7 @@ Connect the User to the Member:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/user-members" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "um_docs_alice_finance_reviewer",
     "user_id": "user_docs_alice",
@@ -270,7 +278,7 @@ Create a permission for expense report approval under a group tree:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/permissions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "perm_expense_report_approve_group_tree",
     "resource": "expense_report",
@@ -286,7 +294,7 @@ Create a Space-local role:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/roles" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "role_contoso_finance_approver",
     "key": "finance_approver",
@@ -301,7 +309,7 @@ Attach the permission to the role:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/role-permissions" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "rp_contoso_finance_approver_expense_report_approve",
     "role_id": "role_contoso_finance_approver",
@@ -315,7 +323,7 @@ Grant the role to the Member at the Finance group:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/member-roles" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "mr_docs_finance_reviewer_approver_finance",
     "member_id": "member_docs_finance_reviewer",
@@ -332,7 +340,7 @@ Mirror the business object you want to protect:
 ```bash
 curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_contoso/resources" \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "id": "expense_report_001",
     "resource_type": "expense_report",
@@ -369,7 +377,7 @@ async function requirePlystraAllow(input: {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Plystra-Admin-Token": process.env.PLYSTRA_ADMIN_TOKEN!,
+      Authorization: `Bearer ${process.env.PLYSTRA_ACCESS_TOKEN!}`,
     },
     body: JSON.stringify({
       actor: {
@@ -474,14 +482,14 @@ Every `authz/check` and `authz/explain` writes a decision trace when audit mode 
 
 ```bash
 curl -s "$PLYSTRA_URL/api/v1/spaces/space_contoso/audit-logs?resource_type=expense_report&resource_id=expense_report_001" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN"
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN"
 ```
 
 The audit log stores the acting user, member, user-member binding, action, resource, decision, deny code, request ID, server-derived IP and user agent, plus trace JSON.
 
 ## Production Integration Rules
 
-- Keep `PLYSTRA_ADMIN_TOKEN` server-side. Browser clients should call your backend, not Plystra management APIs directly.
+- Keep management access tokens server-side. Browser clients should call your backend, not Plystra management APIs directly.
 - Use Plystra `User` records for traceability even if your main application owns login.
 - Store the active `member_id`, `user_member_id`, and `space_id` in your application session after the user chooses a business identity.
 - Call `/api/v1/authz/check` before the protected business mutation.

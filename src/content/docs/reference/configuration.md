@@ -29,7 +29,6 @@ Production rejects the default `plystra:plystra` credentials.
 
 | Variable | Default | Description |
 |---|---|---|
-| `PLYSTRA_ADMIN_TOKEN` / `ADMIN_TOKEN` | development placeholder | Bootstrap token for non-public Core API routes. Must be at least 32 characters in production. |
 | `PLYSTRA_SESSION_SECRET` / `SESSION_SECRET` | development placeholder | Preferred secret for HMAC hashing stored opaque bearer tokens. |
 | `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | compatibility placeholder | Compatibility alias for the session secret. Core v1.0 does not issue JWT claims. |
 | `TRUSTED_PROXIES` | empty | Enables trusted forwarded IP parsing for known proxies. |
@@ -60,7 +59,7 @@ AuditLog is append-only. Production deployments should define retention and expo
 |---|---|---|
 | `DATA_CONSOLE_ENABLED` | `false` | Enables `/api/v1/data/*` preview routes when explicitly set. |
 | `METRICS_ENABLED` | `false` | Enables `/metrics` when explicitly set. |
-| `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN` | empty | Token for `/metrics`. If omitted, admin token is accepted when metrics are enabled. |
+| `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN` | empty | Token for `/metrics`. If omitted, a Bearer session with `metrics:read` is accepted when metrics are enabled. |
 
 Disabled feature routes return `FEATURE_DISABLED`.
 
@@ -70,6 +69,5 @@ With `SERVER_MODE=production`, Core refuses to start if:
 
 - database URL is missing or uses default development credentials.
 - session secret is missing, too short, or a placeholder.
-- admin token is missing, too short, or a placeholder.
 - CORS origins are missing or include `*`.
 - public URL is missing or points to localhost.

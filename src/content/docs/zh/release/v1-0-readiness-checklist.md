@@ -10,7 +10,7 @@ description: 发布 Plystra Core v1.0 前需要通过的检查。
 - `go run .\cmd\plystractl ent check` 通过。
 - `go run .\cmd\plystractl doctor` 通过。
 - `go run .\cmd\explain-demo` 输出四个预期案例。
-- 非公开 API 需要 `PLYSTRA_ADMIN_TOKEN`。
+- 非公开 API 需要拥有 active admin grant 的用户 Bearer session。
 - User API 不返回 `password_hash`。
 - Data Console 默认关闭。
 - Metrics 默认关闭。

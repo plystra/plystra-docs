@@ -90,14 +90,33 @@ Legacy operational aliases also exist under `/system/*` and `/api/v1/system/*`.
 
 ## Use Protected API Routes
 
-All non-public Core API routes require the bootstrap admin token:
+All non-public Core API routes require a Bearer access token for a user with an active admin grant.
+
+Local demo data already grants Alice `instance_super_admin` with `permission_key="*"`. Login and export her access token:
 
 ```bash
-curl -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+export PLYSTRA_ACCESS_TOKEN=$(
+  curl -s -X POST http://localhost:8080/api/v1/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"alice@example.com","password":"plystra-demo"}' |
+  jq -r '.data.access_token'
+)
+```
+
+Then call protected routes:
+
+```bash
+curl -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   http://localhost:8080/api/v1/audit-logs
 ```
 
-The same token can also be passed as `Authorization: Bearer <token>` for admin-token protected routes. Session endpoints use a separate opaque bearer-token flow.
+For a non-demo database, create the first instance super admin with `plystractl`. This command only works when no active `instance_super_admin` grant exists:
+
+```bash
+go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
+```
+
+After the first super admin exists, use `/api/v1/admin/grants` to appoint instance admins, Space admins, and Group admins.
 
 For an end-to-end business integration, use [Integrate Your App](/guides/integrate-your-app/) instead of assembling the individual endpoint calls from scratch.
 
@@ -132,7 +151,6 @@ Before setting `SERVER_MODE=production`, configure:
 ```text
 DATABASE_URL
 PLYSTRA_SESSION_SECRET or JWT_SECRET
-PLYSTRA_ADMIN_TOKEN
 CORS_ALLOWED_ORIGINS
 SERVER_PUBLIC_URL
 ```

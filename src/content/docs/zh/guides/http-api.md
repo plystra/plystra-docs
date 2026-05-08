@@ -68,10 +68,10 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 |---|---|---|
 | 公开运维路由 | health、ready、version | 不需要 token。 |
 | Session auth | login、refresh、logout、actor context、switch-member | 使用登录凭据和 opaque bearer token，token 以 HMAC hash 存储。 |
-| Admin bootstrap protection | 非公开 Core API | 需要 `X-Plystra-Admin-Token`、`X-Admin-Token` 或 `Authorization: Bearer <admin-token>`。 |
-| Metrics token | 启用后的 `/metrics` | 需要 `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`，或 admin token fallback。 |
+| Admin grant protection | 非公开 Core API | 需要拥有 active admin grant 的用户 `Authorization: Bearer <access_token>`。 |
+| Metrics token | 启用后的 `/metrics` | 需要 `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`，或拥有 `metrics:read` 的 Bearer session。 |
 
-受保护路由没有配置 admin token 时返回 `ADMIN_TOKEN_NOT_CONFIGURED`。配置了但请求缺失或错误时返回 `ADMIN_TOKEN_REQUIRED`。
+受保护路由没有有效 session 时返回 `AUTHENTICATION_REQUIRED`。session 用户缺少所需 admin grant 时返回 `ADMIN_PERMISSION_REQUIRED`。
 
 ## 公开路由
 
@@ -118,7 +118,7 @@ bob@example.com / plystra-demo
 ```bash
 curl -X POST http://localhost:8080/api/v1/authz/check \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -136,10 +136,11 @@ HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务�
 
 ## Core 管理路由
 
-本节所有路由都需要 admin token。
+本节所有路由都需要 `Authorization: Bearer <access_token>` 和 active admin grant。`instance_super_admin` 拥有所有权限；`instance_admin` 按 permission key 授权；`space_admin` 限定单个 Space；`group_admin` 限定一个 Group 子树。
 
 | Group | Routes |
 |---|---|
+| Admin grants | `GET /api/v1/admin/me`、`GET/POST /api/v1/admin/grants`、`GET /api/v1/admin/grants/{id}`、`POST /api/v1/admin/grants/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
 | AuditLog | `GET /api/v1/audit-logs`、`GET /api/v1/audit-logs/{id}`，以及 legacy `/api/v1/audit/logs` aliases |
 | Resource Registry | `GET/POST /api/v1/resource-types`，`GET /api/v1/resource-types/{key}`，`GET/POST /api/v1/resource-types/{key}/actions`，`GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
@@ -163,7 +164,7 @@ Data Console 不是 v1.0 blocking surface，默认关闭：
 DATA_CONSOLE_ENABLED=false
 ```
 
-启用并通过 admin token 保护后：
+启用并通过 Bearer user session 保护后：
 
 | Method | Path |
 |---|---|
@@ -181,4 +182,4 @@ Metrics 默认关闭：
 METRICS_ENABLED=false
 ```
 
-启用后，`/metrics` 返回 Prometheus text，并要求 metrics token 或 admin token。
+启用后，`/metrics` 返回 Prometheus text，并要求 metrics token 或拥有 `metrics:read` 的 Bearer session。

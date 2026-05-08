@@ -17,7 +17,7 @@ Plystra Core v1.0 is scoped as a stable self-hosted Core release.
 - Versioned PostgreSQL migrations.
 - Core CRUD HTTP API.
 - Auth session flow.
-- Admin token protection for non-public routes.
+- Bearer session protection for non-public routes.
 - Docker self-hosting baseline.
 - OpenAPI v1.0 artifacts.
 - Finance Reviewer demo.
@@ -36,17 +36,17 @@ The current release docs treat the following as non-blocking:
 - enterprise SSO.
 - advanced policy language.
 
-Some preview metadata routes exist for plugins, templates, and Data Console. Sensitive routes are admin-token protected, and Data Console is disabled by default.
+Some preview metadata routes exist for plugins, templates, and Data Console. Sensitive routes require a Bearer session with an active admin grant, and Data Console is disabled by default.
 
 ## Security Gates
 
 Current v1.0 behavior includes:
 
-- non-public API routes require `PLYSTRA_ADMIN_TOKEN`.
+- non-public API routes require `Authorization: Bearer <access_token>` for a user with an active admin grant.
 - AuditLog and console overview are protected.
 - Data Console routes return `FEATURE_DISABLED` unless enabled.
 - `/metrics` returns `FEATURE_DISABLED` unless enabled.
-- metrics require a metrics token or admin token when enabled.
+- metrics require a metrics token or Bearer user session when enabled.
 - production mode rejects wildcard CORS.
 - production mode rejects default database credentials and placeholder secrets.
 - User API responses and mutation audit details do not expose `password_hash`.
@@ -70,7 +70,7 @@ HTTP smoke tests should cover:
 
 - public health, ready, and version.
 - unauthenticated sensitive routes return `401`.
-- admin token can query AuditLog and Core CRUD.
+- Bearer user session can query AuditLog and Core CRUD.
 - `authz/check` allow and deny cases.
 - `authz/explain` includes matched candidates and scope checks.
 - Data Console and metrics are disabled by default.

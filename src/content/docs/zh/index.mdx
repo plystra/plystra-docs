@@ -61,6 +61,6 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 		PostgreSQL、版本化迁移、Ent schema 检查、Docker Compose 和生产安全 guard 都属于 Core 的交付范围。
 	</Card>
 	<Card title="受保护 API 面" icon="lock">
-		非公开 Core API 需要 bootstrap admin token；Data Console 和 metrics 默认关闭。
+		非公开 Core API 需要 Bearer user session with an active admin grant；Data Console 和 metrics 默认关闭。
 	</Card>
 </CardGrid>

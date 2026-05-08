@@ -63,7 +63,7 @@ Structured JSON request logging
 Recovery middleware
 CORS configuration
 Request ID compatibility output
-Admin token protection for non-public Core APIs
+Bearer session protection for non-public Core APIs
 Disabled-by-default Data Console and metrics surfaces
 Docker self-hosted baseline
 OpenAPI v1.0
@@ -400,7 +400,7 @@ Production mode rejects wildcard CORS origins. Use explicit origins in `CORS_ALL
 
 ## 13.1 Added Admin Token Protection
 
-Non-public Core API routes require `PLYSTRA_ADMIN_TOKEN` through `X-Plystra-Admin-Token` or an equivalent bearer token.
+Non-public Core API routes require `Authorization: Bearer <access_token>` for a user with an active admin grant.
 
 Public operational endpoints are limited to health, readiness, and version routes. Session auth endpoints use their own credential or bearer-token checks.
 

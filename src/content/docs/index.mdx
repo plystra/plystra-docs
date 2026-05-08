@@ -61,6 +61,6 @@ register resource type -> create Space and identities -> grant role -> register 
 		PostgreSQL, versioned migrations, Ent schema checks, Docker Compose, and production safety guards are part of the Core.
 	</Card>
 	<Card title="Protected API surface" icon="lock">
-		Non-public Core APIs require the bootstrap admin token. Data Console and metrics are disabled by default.
+		Non-public Core APIs require the Bearer user session with an active admin grant. Data Console and metrics are disabled by default.
 	</Card>
 </CardGrid>

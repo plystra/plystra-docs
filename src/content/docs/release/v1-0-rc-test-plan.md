@@ -37,7 +37,7 @@ Core CRUD API correctness
 OpenAPI correctness
 request ID compatibility
 release documentation correctness
-admin token protection for sensitive APIs
+Bearer user session protection for sensitive APIs
 disabled-by-default data and metrics surfaces
 ```
 

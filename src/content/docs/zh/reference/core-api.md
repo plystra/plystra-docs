@@ -3,14 +3,14 @@ title: Core API 参考
 description: Plystra Core v1.0 HTTP API 的响应 envelope、认证和主要资源。
 ---
 
-Core API 统一使用 `/api/v1` 前缀。公开路由只包含健康检查、就绪检查、版本信息，以及登录/刷新这类启动必要接口。其他管理接口默认需要 bootstrap admin token。
+Core API 统一使用 `/api/v1` 前缀。公开路由只包含健康检查、就绪检查、版本信息，以及登录/刷新这类启动必要接口。其他管理接口默认需要 Bearer user session with an active admin grant。
 
 ## 认证方式
 
 管理接口：
 
 ```http
-X-Plystra-Admin-Token: <PLYSTRA_ADMIN_TOKEN>
+Authorization: Bearer <access_token>
 ```
 
 会话接口：

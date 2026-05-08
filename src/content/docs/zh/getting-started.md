@@ -90,14 +90,33 @@ curl http://localhost:8080/api/v1/version
 
 ## 调用受保护 API
 
-所有非公开 Core API 都需要 bootstrap admin token：
+所有非公开 Core API 都需要某个拥有 active admin grant 的用户 Bearer access token。
+
+本地 demo 已经给 Alice 创建了 `instance_super_admin`，并授予 `permission_key="*"`。先登录并导出 access token：
 
 ```bash
-curl -H "X-Plystra-Admin-Token: $PLYSTRA_ADMIN_TOKEN" \
+export PLYSTRA_ACCESS_TOKEN=$(
+  curl -s -X POST http://localhost:8080/api/v1/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"alice@example.com","password":"plystra-demo"}' |
+  jq -r '.data.access_token'
+)
+```
+
+然后调用受保护路由：
+
+```bash
+curl -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
   http://localhost:8080/api/v1/audit-logs
 ```
 
-admin-token 保护的路由也接受 `Authorization: Bearer <token>`。Session endpoints 使用独立的 opaque bearer-token 流程。
+非 demo 数据库可以通过 `plystractl` 创建第一个 instance super admin。这个命令只会在没有 active `instance_super_admin` grant 时成功：
+
+```bash
+go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
+```
+
+第一个 super admin 创建后，再通过 `/api/v1/admin/grants` 任命 instance admin、Space admin 和 Group admin。
 
 如果你要完成一条真实业务接入路径，建议直接看 [接入你的应用](/zh/guides/integrate-your-app/)，不用自己从零拼每个 endpoint。
 
@@ -132,7 +151,6 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" \
 ```text
 DATABASE_URL
 PLYSTRA_SESSION_SECRET or JWT_SECRET
-PLYSTRA_ADMIN_TOKEN
 CORS_ALLOWED_ORIGINS
 SERVER_PUBLIC_URL
 ```

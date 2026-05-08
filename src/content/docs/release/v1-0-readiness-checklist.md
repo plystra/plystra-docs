@@ -592,7 +592,7 @@ v1.0 must include standard request middleware.
 - [ ] Panic logs include request ID.
 - [ ] CORS configuration exists.
 - [ ] Trusted proxy behavior is documented if relevant.
-- [ ] Sensitive HTTP APIs require admin token or endpoint-specific authentication.
+- [ ] Sensitive HTTP APIs require Bearer user session or endpoint-specific authentication.
 - [ ] Data Console and metrics surfaces are disabled by default unless explicitly enabled.
 
 ### Required Log Fields

@@ -13,7 +13,7 @@ Plystra Core v1.0 提供稳定的自托管身份与授权核心。
 - Resource Registry。
 - Ent schema 和 versioned migrations。
 - 追加式 audit logs。
-- Admin token 保护 Core 管理 API。
+- Bearer session 保护 Core 管理 API。
 - Docker Compose 与 CLI 运维入口。
 
 ## 升级提醒
