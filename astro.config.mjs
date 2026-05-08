@@ -27,6 +27,8 @@ export default defineConfig({
 					translations: { zh: '核心概念' },
 					items: [
 						{ label: 'Identity and Scope', translations: { zh: '身份与作用域' }, slug: 'concepts/identity-and-scope' },
+						{ label: 'Explainable Identity Core', translations: { zh: '可解释身份核心' }, slug: 'concepts/explainable-identity-core' },
+						{ label: 'Scope Model', translations: { zh: '作用域模型' }, slug: 'concepts/scope-model' },
 					],
 				},
 				{
@@ -43,7 +45,42 @@ export default defineConfig({
 					items: [
 						{ label: 'Configuration', translations: { zh: '配置项' }, slug: 'reference/configuration' },
 						{ label: 'Database and Migrations', translations: { zh: '数据库与迁移' }, slug: 'reference/database-and-migrations' },
+						{ label: 'Core API Reference', translations: { zh: 'Core API 参考' }, slug: 'reference/core-api' },
+						{ label: 'Resource Registry', translations: { zh: 'Resource Registry' }, slug: 'reference/resource-registry' },
+						{ label: 'Audit Trace', translations: { zh: '审计 Trace' }, slug: 'reference/audit-trace' },
+						{ label: 'Ent Database Management', translations: { zh: 'Ent 数据库管理' }, slug: 'reference/ent-database-management' },
 						{ label: 'Release Readiness', translations: { zh: '发布就绪' }, slug: 'reference/release-readiness' },
+					],
+				},
+				{
+					label: 'Operations',
+					translations: { zh: '运维' },
+					items: [
+						{ label: 'Migration and Upgrade Guide', translations: { zh: '迁移与升级指南' }, slug: 'operations/migration-and-upgrade-guide' },
+					],
+				},
+				{
+					label: 'Compatibility',
+					translations: { zh: '兼容性' },
+					items: [
+						{ label: 'Request ID Envelope', translations: { zh: 'Request ID Envelope' }, slug: 'compatibility/request-id-envelope' },
+					],
+				},
+				{
+					label: 'Examples',
+					translations: { zh: '示例' },
+					items: [
+						{ label: 'Identity Trace Demo', translations: { zh: '身份 Trace Demo' }, slug: 'examples/identity-trace-demo' },
+					],
+				},
+				{
+					label: 'Release',
+					translations: { zh: '发布' },
+					items: [
+						{ label: 'v1.0 Readiness', translations: { zh: 'v1.0 就绪状态' }, slug: 'release/v1-0-readiness' },
+						{ label: 'v1.0 Release Notes', translations: { zh: 'v1.0 Release Notes' }, slug: 'release/v1-0-release-notes' },
+						{ label: 'v1.0 Readiness Checklist', translations: { zh: 'v1.0 发布检查清单' }, slug: 'release/v1-0-readiness-checklist' },
+						{ label: 'v1.0 RC Test Plan', translations: { zh: 'v1.0 RC 测试计划' }, slug: 'release/v1-0-rc-test-plan' },
 					],
 				},
 			],
