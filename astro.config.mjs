@@ -8,6 +8,12 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Plystra Docs',
+			logo: {
+				src: './src/assets/plystra.svg',
+				alt: 'Plystra',
+			},
+			favicon: '/plystra.svg',
+			customCss: ['./src/styles/plystra.css'],
 			defaultLocale: 'root',
 			locales: {
 				root: { label: 'English', lang: 'en' },
