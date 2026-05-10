@@ -62,12 +62,15 @@ The current Core migration set includes:
 | `010_v1_core_required_fields` | v1.0 required field alignment. |
 | `011_ent_v1_type_alignment` | Ent type alignment. |
 | `012_ent_v1_empty_database_drift_closure` | Empty database Ent drift closure. |
+| `013_user_admin_grants` | User/session-backed admin grants. |
+| `014_authn_hardening` | Native auth password lifecycle and login audit metadata. |
 
 ## First-class Entity Groups
 
 | Group | Tables |
 |---|---|
 | Identity | `users`, `members`, `user_members`, `sessions` |
+| Admin control plane | `admin_grants` |
 | Tenant structure | `spaces`, `groups` |
 | Authorization | `roles`, `member_roles`, `permissions`, `role_permissions` |
 | Resources | `resources`, `resource_types`, `resource_actions`, `resource_mappings` |

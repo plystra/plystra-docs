@@ -62,12 +62,15 @@ schema 变更、generated code 和 migration files 必须一起提交。
 | `010_v1_core_required_fields` | v1.0 required field 对齐。 |
 | `011_ent_v1_type_alignment` | Ent type 对齐。 |
 | `012_ent_v1_empty_database_drift_closure` | Empty database Ent drift closure。 |
+| `013_user_admin_grants` | 基于 User/session 的管理员授权。 |
+| `014_authn_hardening` | Native auth 密码生命周期和登录审计元数据。 |
 
 ## 一等实体分组
 
 | 分组 | Tables |
 |---|---|
 | Identity | `users`、`members`、`user_members`、`sessions` |
+| Admin control plane | `admin_grants` |
 | Tenant structure | `spaces`、`groups` |
 | Authorization | `roles`、`member_roles`、`permissions`、`role_permissions` |
 | Resources | `resources`、`resource_types`、`resource_actions`、`resource_mappings` |

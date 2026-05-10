@@ -94,10 +94,12 @@ If a protected route is called without a valid session, Core returns `AUTHENTICA
 | Method | Path | Notes |
 |---|---|---|
 | `POST` | `/api/v1/auth/login` | Accepts `email` and `password`; returns access and refresh tokens. |
-| `POST` | `/api/v1/auth/refresh` | Accepts `refresh_token`; rotates the access token. |
+| `POST` | `/api/v1/auth/refresh` | Accepts `refresh_token`; rotates both access and refresh tokens. |
 | `POST` | `/api/v1/auth/logout` | Revokes by bearer access token or body refresh token. |
 | `GET` | `/api/v1/actor/context` | Requires access token. Returns active actor and available members. |
 | `POST` | `/api/v1/actor/switch-member` | Requires access token. Switches active Member/UserMember binding. |
+
+Login failures are rate-limited by normalized email and source IP. New passwords are stored with Argon2id; legacy PBKDF2 hashes are accepted and upgraded after successful login. Changing a User password revokes existing sessions for that User.
 
 Demo credentials seeded for local development:
 

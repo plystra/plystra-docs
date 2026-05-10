@@ -94,10 +94,12 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 | Method | Path | 说明 |
 |---|---|---|
 | `POST` | `/api/v1/auth/login` | 接收 `email` 和 `password`；返回 access/refresh tokens。 |
-| `POST` | `/api/v1/auth/refresh` | 接收 `refresh_token`；轮换 access token。 |
+| `POST` | `/api/v1/auth/refresh` | 接收 `refresh_token`；同时轮换 access token 和 refresh token。 |
 | `POST` | `/api/v1/auth/logout` | 使用 bearer access token 或 body refresh token 撤销 session。 |
 | `GET` | `/api/v1/actor/context` | 需要 access token。返回当前 actor 和 available members。 |
 | `POST` | `/api/v1/actor/switch-member` | 需要 access token。切换 active Member/UserMember binding。 |
+
+登录失败会按标准化 email 和来源 IP 做限速。新密码使用 Argon2id 存储；旧 PBKDF2 hash 仍可登录，并会在成功登录后升级。修改 User 密码会撤销该 User 的现有 sessions。
 
 本地开发种子账号：
 
