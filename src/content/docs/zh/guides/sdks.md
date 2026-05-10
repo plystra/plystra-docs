@@ -7,12 +7,21 @@ Plystra SDK 封装了 v1.0 HTTP API envelope、Bearer session、管理员授权�
 
 SDK 应该放在可信服务端代码中使用。不要把管理 access token 放进浏览器或移动端。
 
+生产环境的标准接入流程：
+
+1. 在 Core 中创建或 bootstrap 一个 instance super admin。
+2. 从可信后端或管理应用登录。
+3. 把返回的 access token 和 refresh token 存入服务端加密 session store。
+4. 使用最新 refresh token 刷新会话。Core 每次刷新都会轮换 refresh token。
+5. 使用拥有对应管理员授权的用户 session 调用管理 API。
+6. 在业务服务执行受保护动作前调用 `authz.check`。
+
 ## 包名
 
 | 语言 | 包名 | 仓库 | 主客户端 |
 |---|---|---|---|
-| TypeScript/JavaScript | `@plystra/sdk` | `plystra/plystra-js` | `PlystraClient` |
-| Python | `plystra` | `plystra/pyplystra` | `Plystra`, `AsyncPlystra` |
+| TypeScript/JavaScript | `@plystra/sdk` | `plystra/js-sdk` | `PlystraClient` |
+| Python | `plystra` | `plystra/python-sdk` | `Plystra`, `AsyncPlystra` |
 | Go | `github.com/plystra/go-plystra` | `plystra/go-plystra` | `plystra.Client` |
 | 插件作者 | `@plystra/plugin-sdk` | `plystra/plystra-plugin-sdk` | `validateManifestForCore` |
 
@@ -33,12 +42,17 @@ import { PlystraClient } from "@plystra/sdk";
 
 const plystra = new PlystraClient({
   baseUrl: "http://localhost:8080",
+  onTokenChange: async (tokens) => {
+    await saveEncryptedSession(tokens);
+  },
 });
 
 await plystra.auth.login({
   email: "alice@example.com",
   password: "plystra-demo",
 });
+
+await plystra.auth.refresh();
 
 const decision = await plystra.authz.check({
   actor: {
@@ -80,6 +94,19 @@ await plystra.audit.list({ space_id: "space_acme" });
 await plystra.plugins.validateManifest(manifest);
 ```
 
+下一次服务端请求中恢复 token：
+
+```ts
+const session = await loadEncryptedSession();
+
+const plystra = new PlystraClient({
+  baseUrl: "https://plystra.internal",
+  accessToken: session.accessToken,
+  refreshToken: session.refreshToken,
+  onTokenChange: saveEncryptedSession,
+});
+```
+
 错误处理：
 
 ```ts
@@ -102,6 +129,8 @@ try {
 pip install plystra
 ```
 
+Python 包支持 Python 3.10 及以上版本。
+
 同步客户端：
 
 ```python
@@ -109,6 +138,10 @@ from plystra import Plystra
 
 with Plystra("http://localhost:8080") as plystra:
     plystra.auth.login("alice@example.com", "plystra-demo")
+    persist_session(plystra.tokens())
+
+    plystra.auth.refresh()
+    persist_session(plystra.tokens())
 
     decision = plystra.authz.check(
         actor={
@@ -135,6 +168,10 @@ from plystra import AsyncPlystra
 async def main() -> None:
     async with AsyncPlystra("http://localhost:8080") as plystra:
         await plystra.auth.login("alice@example.com", "plystra-demo")
+        await save_session(plystra.tokens())
+        await plystra.auth.refresh()
+        await save_session(plystra.tokens())
+
         decision = await plystra.authz.check(
             actor={
                 "user_id": "user_alice",
@@ -162,7 +199,10 @@ transport = httpx.HTTPTransport(retries=2)
 http = httpx.Client(transport=transport, timeout=5.0)
 
 with Plystra("https://plystra.internal", client=http) as plystra:
-    plystra.set_access_token("server-side-access-token")
+    plystra.set_tokens(
+        access_token="server-side-access-token",
+        refresh_token="server-side-refresh-token",
+    )
     print(plystra.admin.me())
 ```
 
@@ -201,13 +241,21 @@ import (
 
 func main() {
 	ctx := context.Background()
-	client := plystra.NewClient("http://localhost:8080")
+client := plystra.NewClient("http://localhost:8080")
 
-	if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
-		log.Fatal(err)
-	}
+if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
+	log.Fatal(err)
+}
+accessToken, refreshToken := client.Tokens()
+saveSession(accessToken, refreshToken)
 
-	decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+if _, err := client.Auth.Refresh(ctx, ""); err != nil {
+	log.Fatal(err)
+}
+accessToken, refreshToken = client.Tokens()
+saveSession(accessToken, refreshToken)
+
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
 		Actor: plystra.ActorContext{
 			UserID:       "user_alice",
 			SpaceID:      "space_acme",
@@ -232,6 +280,7 @@ func main() {
 client := plystra.NewClient(
 	"https://plystra.internal",
 	plystra.WithAccessToken(os.Getenv("PLYSTRA_ACCESS_TOKEN")),
+	plystra.WithRefreshToken(os.Getenv("PLYSTRA_REFRESH_TOKEN")),
 )
 
 me, err := client.Admin.Me(ctx)
