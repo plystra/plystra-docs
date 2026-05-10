@@ -32,6 +32,8 @@ Production rejects the default `plystra:plystra` credentials.
 | `PLYSTRA_SESSION_SECRET` / `SESSION_SECRET` | development placeholder | Preferred secret for HMAC hashing stored opaque bearer tokens. |
 | `PLYSTRA_SESSION_SECRET_PREVIOUS` / `SESSION_SECRET_PREVIOUS` | empty | Optional comma-separated previous secrets accepted during session secret rotation. New tokens are always hashed with the primary secret. |
 | `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | compatibility placeholder | Compatibility alias for the session secret. Core v1.0 does not issue JWT claims. |
+| `PLYSTRA_API_KEY_SECRET` / `API_KEY_SECRET` | session secret fallback outside production | Secret for HMAC hashing stored API keys. Production mode requires a distinct strong value. |
+| `PLYSTRA_API_KEY_SECRET_PREVIOUS` / `API_KEY_SECRET_PREVIOUS` | empty | Optional comma-separated previous API key secrets accepted during API key secret rotation. |
 | `TRUSTED_PROXIES` | empty | Enables trusted forwarded IP parsing for known proxies. |
 | `PLYSTRA_PASSWORD_MIN_LENGTH` | `12` | Minimum password length for native auth user creation and password updates. |
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | Failed login attempts allowed within the login failure window before temporary lockout. |
@@ -40,7 +42,7 @@ Production rejects the default `plystra:plystra` credentials.
 
 Do not use the placeholder values from `.env.example` in production.
 
-Native auth stores new passwords with Argon2id. Legacy PBKDF2 hashes remain readable and are upgraded after a successful login. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User.
+Native auth stores new passwords with Argon2id. Legacy PBKDF2 hashes remain readable and are upgraded after a successful login. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User. API keys are stored as HMAC hashes, are shown only once at creation, and should be kept in a secret manager.
 
 ## CORS and Request Metadata
 
@@ -77,5 +79,6 @@ With `SERVER_MODE=production`, Core refuses to start if:
 - database URL is missing or uses default development credentials.
 - session secret is missing, too short, or a placeholder.
 - previous session secret rotation values are too short or placeholders.
+- API key secret must be set to a strong distinct value in production before creating production API keys.
 - CORS origins are missing or include `*`.
 - public URL is missing or points to localhost.

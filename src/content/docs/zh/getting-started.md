@@ -34,6 +34,7 @@ Compose baseline 会启动 PostgreSQL 和 `plystra-core`。Core 读取 `.env`，
 在依赖任何 API 行为前先执行迁移：
 
 ```bash
+go run entgo.io/ent/cmd/ent generate ./ent/schema
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
 go run ./cmd/plystractl ent check

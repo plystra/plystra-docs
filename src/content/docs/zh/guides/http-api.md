@@ -69,9 +69,10 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 | 公开运维路由 | health、ready、version | 不需要 token。 |
 | Session auth | login、refresh、logout、actor context、switch-member | 使用登录凭据和 opaque bearer token，token 以 HMAC hash 存储。 |
 | Admin grant protection | 非公开 Core API | 需要拥有 active admin grant 的用户 `Authorization: Bearer <access_token>`。 |
+| API key protection | 服务端调用非公开 Core API | 使用 `X-Plystra-API-Key: <api_key>` 或 `Authorization: Bearer ply_ak_...`。API key 带 scope 和 permission key。 |
 | Metrics token | 启用后的 `/metrics` | 需要 `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`，或拥有 `metrics:read` 的 Bearer session。 |
 
-受保护路由没有有效 session 时返回 `AUTHENTICATION_REQUIRED`。session 用户缺少所需 admin grant 时返回 `ADMIN_PERMISSION_REQUIRED`。
+受保护路由没有有效 session 或 API key 时返回 `AUTHENTICATION_REQUIRED`。凭证缺少所需权限时返回 `ADMIN_PERMISSION_REQUIRED`。
 
 ## 公开路由
 
@@ -120,7 +121,7 @@ bob@example.com / plystra-demo
 ```bash
 curl -X POST http://localhost:8080/api/v1/authz/check \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -138,11 +139,12 @@ HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务�
 
 ## Core 管理路由
 
-本节所有路由都需要 `Authorization: Bearer <access_token>` 和 active admin grant。`instance_super_admin` 拥有所有权限；`instance_admin` 按 permission key 授权；`space_admin` 限定单个 Space；`group_admin` 限定一个 Group 子树。
+本节所有路由都需要 `Authorization: Bearer <access_token>` 加 active admin grant，或 `X-Plystra-API-Key: <api_key>` 加匹配的 API key 权限。用户 session 中 `instance_super_admin` 拥有所有权限；`instance_admin` 按 permission key 授权；`space_admin` 限定单个 Space；`group_admin` 限定一个 Group 子树。API key 使用 `instance`、`space`、`group` scope。
 
 | Group | Routes |
 |---|---|
 | Admin grants | `GET /api/v1/admin/me`、`GET/POST /api/v1/admin/grants`、`GET /api/v1/admin/grants/{id}`、`POST /api/v1/admin/grants/{id}/revoke` |
+| API keys | `GET/POST /api/v1/api-keys`、`GET /api/v1/api-keys/{id}`、`POST /api/v1/api-keys/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
 | AuditLog | `GET /api/v1/audit-logs`、`GET /api/v1/audit-logs/{id}`，以及 legacy `/api/v1/audit/logs` aliases |
 | Resource Registry | `GET/POST /api/v1/resource-types`，`GET /api/v1/resource-types/{key}`，`GET/POST /api/v1/resource-types/{key}/actions`，`GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
@@ -157,6 +159,8 @@ HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务�
 | Templates | `GET /api/v1/templates`、`GET /api/v1/templates/{id}`、`POST /api/v1/templates/{id}/preview-install`、`POST /api/v1/templates/{id}/install` |
 
 User 响应已做脱敏，不返回 `password_hash`。
+
+创建 API key 时明文 `api_key` 只返回一次，请保存到 secret manager。Core 只存 HMAC hash。创建 key 所需权限是 `api_keys:create`；读取、撤销和管理分别使用 `api_keys:read`、`api_keys:revoke`、`api_keys:manage`。
 
 ## Data Console preview 路由
 

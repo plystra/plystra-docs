@@ -10,11 +10,33 @@ SDK 应该放在可信服务端代码中使用。不要把管理 access token �
 生产环境的标准接入流程：
 
 1. 在 Core 中创建或 bootstrap 一个 instance super admin。
-2. 从可信后端或管理应用登录。
-3. 把返回的 access token 和 refresh token 存入服务端加密 session store。
-4. 使用最新 refresh token 刷新会话。Core 每次刷新都会轮换 refresh token。
-5. 使用拥有对应管理员授权的用户 session 调用管理 API。
-6. 在业务服务执行受保护动作前调用 `authz.check`。
+2. 由前端或网关完成用户登录，并把 Plystra access token 存入服务端加密 session。
+3. 服务到服务调用使用 scoped API key，不要在请求路径里反复使用用户密码。
+4. 管理 API 可以使用拥有管理员授权的用户 session，也可以使用拥有显式 permission key 的 API key。
+5. 在业务服务执行受保护动作前调用 `authz.check`。
+
+SDK 仍保留账号密码登录能力，适合管理工具和 bootstrap 流程；常规后端检查应使用 access token 或 API key。
+
+## API keys
+
+API key 是机器凭证，支持 `instance`、`space`、`group` 三层 scope，并携带显式 permission key，例如 `authz:check`、`resources:read`、`api_keys:create`。
+
+创建 API key 的凭证必须在目标 scope 上拥有 `api_keys:create`：
+
+```ts
+const created = await plystra.apiKeys.create({
+  name: "billing-service-prod",
+  level: "space",
+  space_id: "space_acme",
+  permission_keys: ["authz:check", "resources:read"],
+  expires_at: "2026-12-31T23:59:59Z",
+});
+
+// 只返回一次，之后请放入 secret manager。
+await secrets.put("PLYSTRA_API_KEY", created.api_key);
+```
+
+用户驱动的操作使用短期 access token；后端服务使用 API key。不要把 API key 放进浏览器或移动端。
 
 ## 包名
 
@@ -40,6 +62,27 @@ npm install @plystra/sdk
 ```ts
 import { PlystraClient } from "@plystra/sdk";
 
+const plystra = new PlystraClient({
+  baseUrl: "http://localhost:8080",
+  accessToken: session.plystraAccessToken,
+  onTokenChange: async (tokens) => {
+    await saveEncryptedSession(tokens);
+  },
+});
+```
+
+服务端进程使用 API key：
+
+```ts
+const plystra = new PlystraClient({
+  baseUrl: "https://plystra.internal",
+  apiKey: process.env.PLYSTRA_API_KEY,
+});
+```
+
+账号密码登录仍可用于管理工具：
+
+```ts
 const plystra = new PlystraClient({
   baseUrl: "http://localhost:8080",
   onTokenChange: async (tokens) => {
@@ -158,6 +201,37 @@ with Plystra("http://localhost:8080") as plystra:
     print(decision["decision"])
 ```
 
+生产后端使用 API key：
+
+```python
+import os
+from plystra import Plystra
+
+with Plystra("https://plystra.internal", api_key=os.environ["PLYSTRA_API_KEY"]) as plystra:
+    decision = plystra.authz.check(
+        actor_user_id="user_alice",
+        actor_member_id="member_finance_reviewer",
+        actor_user_member_id="um_alice_finance_reviewer",
+        space_id="space_acme",
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
+生产后端使用前端或网关传回来的 access token：
+
+```python
+from plystra import Plystra
+
+with Plystra("https://plystra.internal", access_token=session["plystra_access_token"]) as plystra:
+    decision = plystra.authz.check(
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
 异步客户端：
 
 ```python
@@ -274,6 +348,21 @@ decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
 }
 ```
 
+服务端进程使用 API key：
+
+```go
+client := plystra.NewClient(
+	"https://plystra.internal",
+	plystra.WithAPIKey(os.Getenv("PLYSTRA_API_KEY")),
+)
+
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	ResourceType: "invoice",
+	ResourceID:   "invoice_001",
+	Action:       "approve",
+})
+```
+
 复用服务端 access token：
 
 ```go
@@ -369,4 +458,8 @@ plugins:manage
 templates:read
 templates:manage
 metrics:read
+api_keys:read
+api_keys:create
+api_keys:revoke
+api_keys:manage
 ```

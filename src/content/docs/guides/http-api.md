@@ -69,9 +69,10 @@ Errors:
 | Public operational routes | health, ready, version | No token required. |
 | Session auth | login, refresh, logout, actor context, switch-member | Uses login credentials and opaque bearer tokens stored as HMAC hashes. |
 | Admin grant protection | non-public Core APIs | Requires `Authorization: Bearer <access_token>` for a user with an active admin grant. |
+| API key protection | non-public Core APIs for services | Use `X-Plystra-API-Key: <api_key>` or `Authorization: Bearer ply_ak_...`. API keys are scoped and permission-key based. |
 | Metrics token | `/metrics` when enabled | Requires `METRICS_TOKEN` / `PLYSTRA_METRICS_TOKEN`, or a Bearer session with `metrics:read`. |
 
-If a protected route is called without a valid session, Core returns `AUTHENTICATION_REQUIRED`. If the session user lacks the needed admin grant, Core returns `ADMIN_PERMISSION_REQUIRED`.
+If a protected route is called without a valid session or API key, Core returns `AUTHENTICATION_REQUIRED`. If the credential lacks the needed permission, Core returns `ADMIN_PERMISSION_REQUIRED`.
 
 ## Public Routes
 
@@ -120,7 +121,7 @@ Example:
 ```bash
 curl -X POST http://localhost:8080/api/v1/authz/check \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
   -d '{
     "actor": {
       "user_id": "user_alice",
@@ -138,11 +139,12 @@ HTTP authz ignores client-supplied body `request_id`, `ip`, and `user_agent`; ca
 
 ## Core Management Routes
 
-All routes in this section require `Authorization: Bearer <access_token>` and an active admin grant. `instance_super_admin` allows everything. `instance_admin` is permission-key scoped, `space_admin` is limited to one Space, and `group_admin` is limited to one Group subtree.
+All routes in this section require either `Authorization: Bearer <access_token>` with an active admin grant or `X-Plystra-API-Key: <api_key>` with matching API key permissions. `instance_super_admin` allows everything for user sessions. `instance_admin` is permission-key scoped, `space_admin` is limited to one Space, and `group_admin` is limited to one Group subtree. API keys use `instance`, `space`, and `group` scopes.
 
 | Group | Routes |
 |---|---|
 | Admin grants | `GET /api/v1/admin/me`, `GET/POST /api/v1/admin/grants`, `GET /api/v1/admin/grants/{id}`, `POST /api/v1/admin/grants/{id}/revoke` |
+| API keys | `GET/POST /api/v1/api-keys`, `GET /api/v1/api-keys/{id}`, `POST /api/v1/api-keys/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
 | AuditLog | `GET /api/v1/audit-logs`, `GET /api/v1/audit-logs/{id}`, legacy `/api/v1/audit/logs` aliases |
 | Resource Registry | `GET/POST /api/v1/resource-types`, `GET /api/v1/resource-types/{key}`, `GET/POST /api/v1/resource-types/{key}/actions`, `GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
@@ -157,6 +159,8 @@ All routes in this section require `Authorization: Bearer <access_token>` and an
 | Templates | `GET /api/v1/templates`, `GET /api/v1/templates/{id}`, `POST /api/v1/templates/{id}/preview-install`, `POST /api/v1/templates/{id}/install` |
 
 User responses are sanitized and do not return `password_hash`.
+
+API key creation returns plaintext `api_key` once. Store it in a secret manager. Core stores only HMAC hashes. The required permission to create keys is `api_keys:create`; use `api_keys:read`, `api_keys:revoke`, or `api_keys:manage` for read/revoke/administration.
 
 ## Data Console Preview Routes
 

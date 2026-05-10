@@ -38,6 +38,7 @@ For local development, `.env.example` uses explicit localhost CORS values.
 Always apply migrations before relying on the server:
 
 ```bash
+go run entgo.io/ent/cmd/ent generate ./ent/schema
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
 go run ./cmd/plystractl ent check

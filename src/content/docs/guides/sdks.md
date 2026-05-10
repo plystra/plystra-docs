@@ -10,11 +10,33 @@ Use SDKs from trusted server-side code. Do not put a management access token in 
 The normal production flow is:
 
 1. Create or bootstrap an instance super admin in Core.
-2. Log in from your trusted backend or admin app.
-3. Store the returned access token and refresh token in your encrypted server-side session store.
-4. Refresh by using the latest stored refresh token. Core rotates refresh tokens on every refresh.
-5. Call management APIs with a user session that has the required admin grant.
-6. Call `authz.check` from your application service before performing protected business actions.
+2. Let your frontend or gateway perform user login and store the Plystra access token in your encrypted server-side session.
+3. For service-to-service traffic, create a scoped API key instead of replaying a user password.
+4. Call management APIs with either a user session that has an active admin grant or an API key with explicit permission keys.
+5. Call `authz.check` from your application service before performing protected business actions.
+
+Password login remains available in SDKs for admin tools and bootstrap flows, but routine backend checks should use an access token or API key.
+
+## API keys
+
+API keys are machine credentials. They are scoped at `instance`, `space`, or `group` level and carry explicit permission keys such as `authz:check`, `resources:read`, or `api_keys:create`.
+
+Create API keys only from a credential that has `api_keys:create` for the target scope:
+
+```ts
+const created = await plystra.apiKeys.create({
+  name: "billing-service-prod",
+  level: "space",
+  space_id: "space_acme",
+  permission_keys: ["authz:check", "resources:read"],
+  expires_at: "2026-12-31T23:59:59Z",
+});
+
+// Store this once in your secret manager. It is not returned again.
+await secrets.put("PLYSTRA_API_KEY", created.api_key);
+```
+
+Use a short-lived user access token for user-driven operations and an API key for backend services. Do not put API keys in browser or mobile clients.
 
 ## Packages
 
@@ -40,6 +62,27 @@ Log in and call an authorization check:
 ```ts
 import { PlystraClient } from "@plystra/sdk";
 
+const plystra = new PlystraClient({
+  baseUrl: "http://localhost:8080",
+  accessToken: session.plystraAccessToken,
+  onTokenChange: async (tokens) => {
+    await saveEncryptedSession(tokens);
+  },
+});
+```
+
+Use an API key from a server process:
+
+```ts
+const plystra = new PlystraClient({
+  baseUrl: "https://plystra.internal",
+  apiKey: process.env.PLYSTRA_API_KEY,
+});
+```
+
+Password login is available for admin tools:
+
+```ts
 const plystra = new PlystraClient({
   baseUrl: "http://localhost:8080",
   onTokenChange: async (tokens) => {
@@ -158,6 +201,37 @@ with Plystra("http://localhost:8080") as plystra:
     print(decision["decision"])
 ```
 
+Production backend usage with an API key:
+
+```python
+import os
+from plystra import Plystra
+
+with Plystra("https://plystra.internal", api_key=os.environ["PLYSTRA_API_KEY"]) as plystra:
+    decision = plystra.authz.check(
+        actor_user_id="user_alice",
+        actor_member_id="member_finance_reviewer",
+        actor_user_member_id="um_alice_finance_reviewer",
+        space_id="space_acme",
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
+Production backend usage with an access token received from your frontend or gateway:
+
+```python
+from plystra import Plystra
+
+with Plystra("https://plystra.internal", access_token=session["plystra_access_token"]) as plystra:
+    decision = plystra.authz.check(
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
 Async client:
 
 ```python
@@ -274,6 +348,21 @@ decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
 }
 ```
 
+Use an API key from a service:
+
+```go
+client := plystra.NewClient(
+	"https://plystra.internal",
+	plystra.WithAPIKey(os.Getenv("PLYSTRA_API_KEY")),
+)
+
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	ResourceType: "invoice",
+	ResourceID:   "invoice_001",
+	Action:       "approve",
+})
+```
+
 Reuse a server-side access token:
 
 ```go
@@ -369,4 +458,8 @@ plugins:manage
 templates:read
 templates:manage
 metrics:read
+api_keys:read
+api_keys:create
+api_keys:revoke
+api_keys:manage
 ```

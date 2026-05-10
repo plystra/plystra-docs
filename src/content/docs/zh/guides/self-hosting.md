@@ -38,6 +38,7 @@ docker compose up -d
 启动可信 API 前必须应用迁移：
 
 ```bash
+go run entgo.io/ent/cmd/ent generate ./ent/schema
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
 go run ./cmd/plystractl ent check

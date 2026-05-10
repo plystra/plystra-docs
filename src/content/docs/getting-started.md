@@ -34,6 +34,7 @@ The Compose baseline starts PostgreSQL and `plystra-core`. Core reads `.env`, us
 Run migrations before relying on any API behavior:
 
 ```bash
+go run entgo.io/ent/cmd/ent generate ./ent/schema
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
 go run ./cmd/plystractl ent check
