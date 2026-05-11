@@ -5,7 +5,7 @@ description: Migrated from the Core repository and updated for the current v1.0 
 
 # Explainable Identity Core
 
-Plystra v0.1 turns the Finance Reviewer prototype into a reusable internal authorization core.
+Plystra v1.0 turns the Finance Reviewer prototype into a production-ready self-hosted authorization core.
 
 ## Package Boundary
 
@@ -33,6 +33,7 @@ The authorization engine depends on the `authz.Store` interface:
 
 ```go
 type Store interface {
+    LoadResourceRegistration(ctx context.Context, resourceType, action string) (ResourceRegistrySnapshot, error)
     LoadActor(ctx context.Context, actor ActorContext) (ActorSnapshot, error)
     LoadTarget(ctx context.Context, resourceType, resourceID string) (TargetSnapshot, error)
     LoadPermissionCandidates(ctx context.Context, query CandidateQuery) ([]PermissionCandidate, error)
@@ -40,7 +41,7 @@ type Store interface {
 }
 ```
 
-The PostgreSQL implementation lives in `internal/store` and uses pgx with raw SQL. Raw SQL remains the right fit for v0.1 because the model is still being proven and the demo seed data should stay easy to read.
+The PostgreSQL implementation lives in `internal/store/entstore` and uses Ent-generated query/mutation APIs for Core business entities. Versioned SQL migrations remain the production upgrade boundary and are applied with Atlas through `plystractl migrate up`. The only intentionally raw SQL paths are migration control-plane reads and writes around `schema_migrations`.
 
 ## Session To Actor Contract
 
@@ -54,7 +55,7 @@ Production applications should resolve actor context before calling Plystra:
 6. Business APIs execute or reject the action.
 7. Plystra writes an audit log snapshot.
 
-The exact token or session format is intentionally deferred. The required contract is the explicit actor tuple:
+The HTTP API provides opaque bearer sessions, refresh tokens, actor context, member switching, admin grants, and scoped API keys. SDKs can call Plystra with an access token from the frontend flow or with an API key for server-to-server workloads. The required authorization tuple remains explicit:
 
 ```text
 user_id
@@ -89,35 +90,29 @@ UserMember state is enforced independently from role grants. A revoked or expire
 
 Historical logs should remain explainable even after live roles, groups, permissions, or bindings change later.
 
-## Ent Evaluation
+## Ent And Migration Boundary
 
-Ent is deferred for v0.1.
+Ent is no longer deferred. In v1.0 it is the canonical Go schema model for business entities:
 
-Reasons to keep raw SQL now:
+- `ent/schema` defines Core entities.
+- generated Ent clients are used for HTTP API, auth/session, Resource Registry, plugin/template, audit, admin grant, API key, and authorization store paths.
+- `migrations/` contains ordered SQL migrations with `atlas.sum` integrity checking.
+- production upgrades use `plystractl migrate up`; Ent auto migration is reserved for guarded development checks.
 
-- the schema is small and readable
-- migrations are part of the demo artifact
-- the authorization query shape is still stabilizing
-- adopting an ORM too early would add more framework surface than product learning
-
-Ent can be reconsidered when the Resource Registry and Console require richer schema metadata, generated queries, and relationship traversal.
-
-## v0.1 Acceptance Status
+## v1.0 Acceptance Status
 
 | Requirement | Status |
 |---|---|
-| Authorization engine separated from CLI | done |
-| Store layer separated from authorization engine | done |
+| Authorization engine separated from HTTP/API and CLI | done |
+| Store layer separated through `authz.Store` | done |
+| Ent-backed business data access | done |
+| Atlas-backed versioned migration execution | done |
 | Finance Reviewer demo still runs | done |
-| Four v0.1-pre demo cases still pass | done |
-| Audit logs are persisted | done |
-| Trace output includes matched candidates | done |
+| Audit logs are persisted and explainable | done |
+| Trace output includes matched candidates and scope checks | done |
 | Deny codes are machine-readable | done |
 | Revoked and expired UserMember behavior is enforced | done |
-| Documentation explains application integration | done |
-| No Admin Console, Plugin, Template, or Cloud scope | done |
-
-## v0.2 Notes
-
-The core already has resolver behavior for `self`, `group`, `group_tree`, `space`, and disabled `global`. v0.2 should continue by hardening these paths with database-backed fixtures, a clearer error model, and the first small policy-layer preview.
+| same-space protections are enforced | done |
+| Admin grants and scoped API keys protect non-public APIs | done |
+| Data Console and metrics are disabled by default | done |
 

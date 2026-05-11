@@ -26,8 +26,13 @@ docker compose up -d
 |---|---|---|
 | `SERVER_PORT` | `8080` | Core 对外端口。 |
 | `DOCKER_DATABASE_URL` | Compose PostgreSQL URL | 容器内连接数据库使用。 |
-| `CORS_ALLOWED_ORIGINS` | Compose fallback 为 `*` | 开发友好默认值。生产模式会拒绝 wildcard CORS。 |
+| `CORS_ALLOWED_ORIGINS` | localhost 列表 | 显式浏览器 origins。生产模式会拒绝 wildcard CORS。 |
 | `PLYSTRA_SESSION_SECRET` | 开发 placeholder | 用于 HMAC opaque session token 的 secret。 |
+| `PLYSTRA_API_KEY_SECRET` | 开发 placeholder | 用于 HMAC API key 的 secret。生产要求独立强 secret。 |
+| `HTTP_READ_HEADER_TIMEOUT` | `5s` | 防止慢速 header 读取。 |
+| `HTTP_READ_TIMEOUT` | `30s` | 请求读取超时。 |
+| `HTTP_WRITE_TIMEOUT` | `60s` | 响应写入超时。 |
+| `HTTP_IDLE_TIMEOUT` | `120s` | keep-alive idle timeout。 |
 | `DATA_CONSOLE_ENABLED` | `false` | 默认关闭 preview data routes。 |
 | `METRICS_ENABLED` | `false` | 默认关闭 `/metrics`。 |
 
@@ -77,6 +82,7 @@ readiness endpoint 会检查数据库连接和预期 migration/schema 状态。
 |---|---|
 | `DATABASE_URL` 或 `PLYSTRA_DATABASE_URL` | 必填；不能使用默认 `plystra:plystra` 凭据。 |
 | `PLYSTRA_SESSION_SECRET`、`SESSION_SECRET`、`JWT_SECRET` 或 `PLYSTRA_JWT_SECRET` | 至少 32 字符，不能是默认 placeholder。 |
+| `PLYSTRA_API_KEY_SECRET` 或 `API_KEY_SECRET` | 至少 32 字符，不能是默认 placeholder，且必须与 session secret 不同。 |
 | `CORS_ALLOWED_ORIGINS` | 必填；不能包含 `*`。 |
 | `SERVER_PUBLIC_URL` 或 `PLYSTRA_SERVER_PUBLIC_URL` | 必填；不能指向 localhost。 |
 

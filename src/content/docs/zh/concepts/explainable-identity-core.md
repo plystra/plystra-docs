@@ -26,3 +26,7 @@ User -> UserMember -> Member -> Space
 - revoked / expired UserMember 不能通过授权。
 - 授权必须校验 same-space。
 - 审计 trace 必须保存决策时的身份链路快照。
+- 业务实体数据库访问使用 Ent；`schema_migrations` 属于迁移控制面。
+- 生产升级使用 Atlas-backed `plystractl migrate up` 和 `migrations/atlas.sum` 校验。
+- 非公开 API 使用用户体系的 admin grant 或 scoped API key 保护，不使用 admin-token。
+- Data Console 和 metrics 默认关闭。

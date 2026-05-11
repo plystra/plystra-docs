@@ -13,7 +13,7 @@ Plystra Core is configured through environment variables. In production, `cmd/pl
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP port. |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | Set to `production` for production guards. |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | local development URL in `.env.example` | Public URL. Required and non-localhost in production. |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev` | Reported by the version endpoint. |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev10` | Reported by the version endpoint. |
 
 ## Database
 
@@ -34,6 +34,10 @@ Production rejects the default `plystra:plystra` credentials.
 | `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | compatibility placeholder | Compatibility alias for the session secret. Core v1.0 does not issue JWT claims. |
 | `PLYSTRA_API_KEY_SECRET` / `API_KEY_SECRET` | session secret fallback outside production | Secret for HMAC hashing stored API keys. Production mode requires a distinct strong value. |
 | `PLYSTRA_API_KEY_SECRET_PREVIOUS` / `API_KEY_SECRET_PREVIOUS` | empty | Optional comma-separated previous API key secrets accepted during API key secret rotation. |
+| `HTTP_READ_HEADER_TIMEOUT` | `5s` | HTTP server read-header timeout. |
+| `HTTP_READ_TIMEOUT` | `30s` | HTTP server request read timeout. |
+| `HTTP_WRITE_TIMEOUT` | `60s` | HTTP server response write timeout. |
+| `HTTP_IDLE_TIMEOUT` | `120s` | HTTP keep-alive idle timeout. |
 | `TRUSTED_PROXIES` | empty | Enables trusted forwarded IP parsing for known proxies. |
 | `PLYSTRA_PASSWORD_MIN_LENGTH` | `12` | Minimum password length for native auth user creation and password updates. |
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | Failed login attempts allowed within the login failure window before temporary lockout. |
@@ -48,7 +52,7 @@ Native auth stores new passwords with Argon2id. Legacy PBKDF2 hashes remain read
 
 | Variable | Default | Description |
 |---|---|---|
-| `CORS_ALLOWED_ORIGINS` | localhost list in `.env.example`, `*` Compose fallback | Comma-separated allowed origins. Production rejects empty or wildcard values. |
+| `CORS_ALLOWED_ORIGINS` | localhost list | Comma-separated allowed origins. Production rejects empty or wildcard values. |
 | `REQUEST_ID_HEADER` | `X-Request-ID` | Request ID header name. |
 
 HTTP authorization checks ignore body-provided `ip`, `user_agent`, and canonical `request_id`. The server derives those values from the request and middleware.

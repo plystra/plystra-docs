@@ -26,8 +26,13 @@ Important Compose variables:
 |---|---|---|
 | `SERVER_PORT` | `8080` | Host port for Core. |
 | `DOCKER_DATABASE_URL` | Compose PostgreSQL URL | Database URL used by the container. |
-| `CORS_ALLOWED_ORIGINS` | `*` in Compose fallback | Development-friendly fallback. Production mode rejects wildcard CORS. |
+| `CORS_ALLOWED_ORIGINS` | localhost list | Explicit browser origins. Production mode rejects wildcard CORS. |
 | `PLYSTRA_SESSION_SECRET` | development placeholder | Secret used to HMAC opaque session tokens. |
+| `PLYSTRA_API_KEY_SECRET` | development placeholder | Secret used to HMAC API keys. Production requires a distinct strong value. |
+| `HTTP_READ_HEADER_TIMEOUT` | `5s` | Protects the API from slow header reads. |
+| `HTTP_READ_TIMEOUT` | `30s` | Request read timeout. |
+| `HTTP_WRITE_TIMEOUT` | `60s` | Response write timeout. |
+| `HTTP_IDLE_TIMEOUT` | `120s` | Keep-alive idle timeout. |
 | `DATA_CONSOLE_ENABLED` | `false` | Keeps preview data routes disabled. |
 | `METRICS_ENABLED` | `false` | Keeps `/metrics` disabled. |
 
@@ -77,6 +82,7 @@ When `SERVER_MODE=production`, startup validates:
 |---|---|
 | `DATABASE_URL` or `PLYSTRA_DATABASE_URL` | Required; must not use default `plystra:plystra` credentials. |
 | `PLYSTRA_SESSION_SECRET`, `SESSION_SECRET`, `JWT_SECRET`, or `PLYSTRA_JWT_SECRET` | At least 32 characters and not a default placeholder. |
+| `PLYSTRA_API_KEY_SECRET` or `API_KEY_SECRET` | At least 32 characters, not a default placeholder, and distinct from the session secret. |
 | `CORS_ALLOWED_ORIGINS` | Required; must not include `*`. |
 | `SERVER_PUBLIC_URL` or `PLYSTRA_SERVER_PUBLIC_URL` | Required; must not point to localhost. |
 
