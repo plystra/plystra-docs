@@ -81,6 +81,7 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 
 | Method | Path | 说明 |
 |---|---|---|
+| `POST` | `/api/v1/auth/register` | 受保护注册端点。默认关闭；启用后需要 registration token。 |
 | `POST` | `/api/v1/auth/login` | 接收 `email` 和 `password`；返回 access/refresh tokens。 |
 | `POST` | `/api/v1/auth/refresh` | 接收 `refresh_token`；同时轮换 access token 和 refresh token。 |
 | `POST` | `/api/v1/auth/logout` | 使用 bearer access token 或 body refresh token 撤销 session。 |

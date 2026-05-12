@@ -5,7 +5,7 @@ description: A practical entry point for integrating Plystra Core v1.0 into a pr
 
 This handbook is split into short, task-focused pages. Start here when you are adding Plystra to an application that already has business objects such as invoices, tickets, orders, documents, cases, or projects.
 
-The examples use the current Core API and SDK behavior in `1.0.0-rc5`. Use the pages below in order for a complete integration path, or jump directly to the area you are implementing.
+The examples use the current Core API and SDK behavior in `1.0.0-rc6`. Use the pages below in order for a complete integration path, or jump directly to the area you are implementing.
 
 ## Read in Order
 

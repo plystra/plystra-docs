@@ -81,6 +81,7 @@ If a protected route is called without a valid session or API key, Core returns 
 
 | Method | Path | Notes |
 |---|---|---|
+| `POST` | `/api/v1/auth/register` | Protected registration endpoint. Disabled by default and requires registration tokens when enabled. |
 | `POST` | `/api/v1/auth/login` | Accepts `email` and `password`; returns access and refresh tokens. |
 | `POST` | `/api/v1/auth/refresh` | Accepts `refresh_token`; rotates both access and refresh tokens. |
 | `POST` | `/api/v1/auth/logout` | Revokes by bearer access token or body refresh token. |

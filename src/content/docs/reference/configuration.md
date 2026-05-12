@@ -13,7 +13,7 @@ Plystra Core is configured through environment variables. In production, `cmd/pl
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP port. |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | Set to `production` for production guards. |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | local development URL in `.env.example` | Public URL. Required and non-localhost in production. |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc5` | Reported by the version endpoint. |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc6` | Reported by the version endpoint. |
 
 ## Database
 
@@ -42,10 +42,16 @@ Production rejects the default `plystra:plystra` credentials.
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | Failed login attempts allowed within the login failure window before temporary lockout. |
 | `PLYSTRA_AUTH_LOGIN_WINDOW` | `15m` | Login failure counting window. Duration strings are accepted. |
 | `PLYSTRA_AUTH_LOGIN_LOCKOUT` | `15m` | Temporary lockout duration after too many failed login attempts. |
+| `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | Enables ordinary user registration after at least one active `instance_super_admin` exists. |
+| `PLYSTRA_AUTH_REGISTRATION_TOKEN` | empty | Shared registration token required for ordinary registration. Required and at least 32 characters in production when registration is enabled. |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED` | `false` | Enables the protected first-super-admin registration path only while no active `instance_super_admin` exists. |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN` | empty | Separate bootstrap registration token. Required and at least 32 characters in production when bootstrap registration is enabled. |
 
 Do not use the placeholder values from `.env.example` in production.
 
 Native auth stores and verifies passwords with Argon2id. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User. API keys are stored as HMAC hashes, are shown only once at creation, and should be kept in a secret manager.
+
+Registration is disabled by default. Keep it disabled for enterprise deployments unless an explicit onboarding flow needs it. First-super-admin registration uses a separate bootstrap flag and token so ordinary registration cannot silently create the initial instance owner.
 
 ## CORS and Request Metadata
 
@@ -83,5 +89,6 @@ With `SERVER_MODE=production`, Core refuses to start if:
 - session secret is missing, too short, or a placeholder.
 - previous session secret rotation values are too short or placeholders.
 - API key secret must be set to a strong distinct value in production before creating production API keys.
+- ordinary or bootstrap registration is enabled without its matching strong registration token.
 - CORS origins are missing or include `*`.
 - public URL is missing or points to localhost.

@@ -13,7 +13,7 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP 端口。 |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | 设为 `production` 启用生产 guard。 |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | `.env.example` 中的本地开发 URL | Public URL。生产必填且不能是 localhost。 |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc5` | version endpoint 返回的 Core 版本。 |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc6` | version endpoint 返回的 Core 版本。 |
 
 ## Database
 
@@ -42,10 +42,16 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | 登录失败窗口内允许的失败次数，超过后临时锁定。 |
 | `PLYSTRA_AUTH_LOGIN_WINDOW` | `15m` | 登录失败统计窗口，支持 duration 字符串。 |
 | `PLYSTRA_AUTH_LOGIN_LOCKOUT` | `15m` | 登录失败过多后的临时锁定时长。 |
+| `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | 启用普通用户注册。系统必须已经存在至少一个 active `instance_super_admin`。 |
+| `PLYSTRA_AUTH_REGISTRATION_TOKEN` | 空 | 普通注册 token。生产环境启用注册时必须设置，且至少 32 字符。 |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED` | `false` | 在还没有 active `instance_super_admin` 时，启用受保护的首个 super admin 注册路径。 |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN` | 空 | 独立 bootstrap 注册 token。生产环境启用 bootstrap 注册时必须设置，且至少 32 字符。 |
 
 生产环境不要使用 `.env.example` 中的 placeholder 值。
 
 Native auth 使用 Argon2id 存储和验证密码。Refresh 会同时轮换 access token 和 refresh token。密码变更会撤销该 User 的现有 sessions。API key 只保存 HMAC hash，明文只在创建时返回一次，应放入 secret manager。
+
+注册默认关闭。企业部署除非有明确 onboarding 流程，否则应保持关闭。首个 super admin 注册使用独立 bootstrap flag 和 token，普通注册不能悄悄创建初始 instance owner。
 
 ## CORS 与请求元数据
 
@@ -83,5 +89,6 @@ AuditLog 是 append-only。生产部署应定义 retention 和 export 策略。
 - session secret 缺失、过短或为 placeholder。
 - previous session secret 轮换值过短或为 placeholder。
 - 生产环境必须配置独立强 `PLYSTRA_API_KEY_SECRET` 后再创建生产 API key。
+- 普通注册或 bootstrap 注册开启，但没有配置对应的强注册 token。
 - CORS origins 缺失或包含 `*`。
 - public URL 缺失或指向 localhost。

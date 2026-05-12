@@ -78,4 +78,4 @@ HTTP smoke tests 应覆盖：
 
 ## RC 建议
 
-上述安全 gates 通过后，版本适合进入 `v1.0.0-rc5` 验证。Stable release 还应重复 clean-clone、empty-database migration、upgrade 和 documentation checks。
+上述安全 gates 通过后，版本适合进入 `v1.0.0-rc6` 验证。Stable release 还应重复 clean-clone、empty-database migration、upgrade 和 documentation checks。

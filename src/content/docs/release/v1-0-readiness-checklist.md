@@ -59,7 +59,7 @@ Advanced policy engine
 
 ## 2. Release Scope Freeze
 
-Before cutting `v1.0.0-rc5`, confirm that the v1.0 scope is frozen.
+Before cutting `v1.0.0-rc6`, confirm that the v1.0 scope is frozen.
 
 ### Required
 
@@ -680,7 +680,7 @@ A developer should not need private project context to install, run, test, or un
 
 ## 17. Final RC Gate
 
-Before tagging `v1.0.0-rc5`, all of the following must pass:
+Before tagging `v1.0.0-rc6`, all of the following must pass:
 
 ```bash
 go test ./...

@@ -3,7 +3,7 @@ title: Admin Auth 与安全边界
 description: Plystra Core 管理 API、用户 session、AdminGrant、scoped API key 和防提权规则的精确说明。
 ---
 
-本文说明 `1.0.0-rc5` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
+本文说明 `1.0.0-rc6` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
 
 ## 核心规则
 
@@ -14,7 +14,7 @@ Plystra Core 没有 admin token。每个非公开管理路由必须由以下凭�
 | User access token | `Authorization: Bearer <access_token>` | 拥有 active `AdminGrant` 的 `User`。 | 人类管理后台、运维、用户驱动的管理流程。 |
 | API key | `X-Plystra-API-Key: <api_key>` 或 `Authorization: Bearer ply_ak_...` | 带显式 permission key 的 scoped `ApiKey`。 | 服务到服务自动化和授权检查。 |
 
-公开路由仅限 health、ready、version、login、refresh、logout、actor context、actor switch-member，以及 disabled/protected metrics handler。敏感 API 不应该匿名访问。
+公开路由仅限 health、ready、version、受保护注册、login、refresh、logout、actor context、actor switch-member，以及 disabled/protected metrics handler。敏感 API 不应该匿名访问。
 
 ## AdminGrant Level
 
@@ -154,6 +154,16 @@ authz:check
 对于已有对象，Core 会先解析对象存储的 scope 再决定可见性，因此 Space admin 不能列出或读取 instance-level API key / AdminGrant。
 
 ## Session Auth 细节
+
+注册路由：
+
+```http
+POST /api/v1/auth/register
+```
+
+注册默认关闭，只有 operator 显式开启后才可用。普通注册需要 `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` 和匹配的 `PLYSTRA_AUTH_REGISTRATION_TOKEN`；生产环境还要求 token 至少 32 字符。普通注册会在系统没有 active `instance_super_admin` grant 时被拒绝。
+
+首个 super admin 的注册 bootstrap 是独立路径：设置 `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true`，并使用 `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`。该路径只在没有 active `instance_super_admin` grant 时可用，会在一个事务中创建 User、personal Space/Member/UserMember、Space admin grant 和初始 `instance_super_admin` grant，然后返回 session token pair。
 
 登录路由：
 

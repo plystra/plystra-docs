@@ -3,7 +3,7 @@ title: Admin Auth and Security
 description: Exact security model for Plystra Core management APIs, user sessions, admin grants, scoped API keys, and anti-escalation rules.
 ---
 
-This reference documents the current Core management authorization model in `1.0.0-rc5`. It is intentionally explicit because this layer protects the control plane.
+This reference documents the current Core management authorization model in `1.0.0-rc6`. It is intentionally explicit because this layer protects the control plane.
 
 ## Core Rule
 
@@ -14,7 +14,7 @@ Plystra Core has no admin token. Every non-public management route must be autho
 | User access token | `Authorization: Bearer <access_token>` | A `User` with active `AdminGrant` rows. | Human admin consoles, operators, user-driven management flows. |
 | API key | `X-Plystra-API-Key: <api_key>` or `Authorization: Bearer ply_ak_...` | A scoped `ApiKey` row with explicit permission keys. | Server-to-server automation and authorization checks. |
 
-Public routes are limited to health, ready, version, login, refresh, logout, actor context, actor switch-member, and the disabled/protected metrics handler. Sensitive APIs are not intended to be anonymous.
+Public routes are limited to health, ready, version, protected registration, login, refresh, logout, actor context, actor switch-member, and the disabled/protected metrics handler. Sensitive APIs are not intended to be anonymous.
 
 ## AdminGrant Levels
 
@@ -154,6 +154,16 @@ That pass-through is not the final authorization. The handler must then resolve 
 For existing objects, Core resolves the object's stored scope before deciding visibility. This prevents a Space admin from listing or reading instance-level API keys or AdminGrants.
 
 ## Session Auth Details
+
+Registration route:
+
+```http
+POST /api/v1/auth/register
+```
+
+Registration is disabled unless an operator explicitly enables it. Ordinary registration requires `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` and a matching `PLYSTRA_AUTH_REGISTRATION_TOKEN`; production also requires that token to be at least 32 characters. Ordinary registration is refused until at least one active `instance_super_admin` grant already exists.
+
+First-super-admin bootstrap through registration is separate: set `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true` and use `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`. This path is only available while no active `instance_super_admin` grant exists, creates the user, a personal Space/Member/UserMember, a Space admin grant, and the initial `instance_super_admin` grant in one transaction, then returns a session token pair.
 
 Login route:
 
