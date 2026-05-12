@@ -22,7 +22,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## 从这里开始
 
-如果你要把 Plystra 接到现有后端，先看开发者手册。它会用真实 API 带你走完整路径，并明确凭证选择、安全边界、SDK 用法、排错和测试方式：
+如果你要把 Plystra 接到现有后端，先看开发者手册。它已经拆成多个专题页，用真实 API 带你走完整路径，并明确凭证选择、安全边界、SDK 用法、排错和测试方式：
 
 ```text
 注册资源类型 -> 创建 Space 和身份链 -> 授权角色 -> 登记资源 -> 调用 authz/check
@@ -30,7 +30,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 <CardGrid>
 	<Card title="开发者手册" icon="open-book" href="/zh/guides/developer-handbook/">
-		完整生产接入路径：启动 Core、建模身份、创建资源、分配角色、创建 API key、调用 authz 并测试越权边界。
+		完整生产接入路径，按启动、身份建模、权限、API key、SDK 和边界测试拆成短页面。
 	</Card>
 	<Card title="接入现有应用" icon="right-arrow" href="/zh/guides/integrate-your-app/">
 		创建保护业务接口所需的 Plystra 记录，然后在你的后端调用 `/api/v1/authz/check`。

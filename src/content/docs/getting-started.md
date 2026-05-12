@@ -71,7 +71,7 @@ The demo prints four required traces:
 | Bob approves through the same Member | `allow` | Multiple Users can act through the same Member identity. |
 | Alice uses a revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` is the active authorization bridge. |
 
-If this demo output looks correct, the fastest next step is the [Developer Handbook](/guides/developer-handbook/). It turns this same model into copy-paste API calls, SDK examples, credential choices, admin grant rules, and production boundary tests. The shorter [Integrate Your App](/guides/integrate-your-app/) guide is also available when you only need the business endpoint flow.
+If this demo output looks correct, the fastest next step is the [Developer Handbook](/guides/developer-handbook/). It splits this same model into setup, authorization, copy-paste API calls, SDK examples, credential choices, admin grant rules, and production boundary tests. The shorter [Integrate Your App](/guides/integrate-your-app/) guide is also available when you only need the business endpoint flow.
 
 ## Start the API
 

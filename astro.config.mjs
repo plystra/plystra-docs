@@ -26,7 +26,20 @@ export default defineConfig({
 					translations: { 'zh-CN': '开始' },
 					items: [
 						{ label: 'Quickstart', translations: { 'zh-CN': '快速开始' }, slug: 'getting-started' },
-						{ label: 'Developer Handbook', translations: { 'zh-CN': '开发者手册' }, slug: 'guides/developer-handbook' },
+						{
+							label: 'Developer Handbook',
+							translations: { 'zh-CN': '开发者手册' },
+							items: [
+								{ label: 'Overview', translations: { 'zh-CN': '总览' }, slug: 'guides/developer-handbook' },
+								{ label: 'Model and Architecture', translations: { 'zh-CN': '模型与生产架构' }, slug: 'guides/developer-handbook/model-and-architecture' },
+								{ label: 'Local Setup and Bootstrap', translations: { 'zh-CN': '本地启动与 Bootstrap' }, slug: 'guides/developer-handbook/local-bootstrap' },
+								{ label: 'Authorization Model', translations: { 'zh-CN': '授权模型' }, slug: 'guides/developer-handbook/authorization-model' },
+								{ label: 'Integration Path', translations: { 'zh-CN': '可复制接入流程' }, slug: 'guides/developer-handbook/integration-path' },
+								{ label: 'API Keys and Admin Grants', translations: { 'zh-CN': 'API Key 与 AdminGrant' }, slug: 'guides/developer-handbook/api-keys-and-admin-grants' },
+								{ label: 'SDKs and Errors', translations: { 'zh-CN': 'SDK 与错误处理' }, slug: 'guides/developer-handbook/sdk-and-errors' },
+								{ label: 'Production Checklist', translations: { 'zh-CN': '生产检查与排错' }, slug: 'guides/developer-handbook/production-checklist' },
+							],
+						},
 						{ label: 'Integrate Your App', translations: { 'zh-CN': '接入你的应用' }, slug: 'guides/integrate-your-app' },
 						{ label: 'SDKs', translations: { 'zh-CN': 'SDK' }, slug: 'guides/sdks' },
 					],

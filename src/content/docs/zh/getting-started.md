@@ -71,7 +71,7 @@ demo 会打印四个必需 trace：
 | Bob 通过同一个 Member 审批 | `allow` | 多个 User 可以通过同一个 Member 身份行动。 |
 | Alice 使用 revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` 是有效授权桥。 |
 
-如果 demo 输出正确，下一步直接看 [开发者手册](/zh/guides/developer-handbook/)。那篇会把同一套模型变成可复制的 API 请求、SDK 示例、凭证选择、AdminGrant 规则和生产越权测试。只需要业务 endpoint 流程时，也可以看较短的 [接入你的应用](/zh/guides/integrate-your-app/)。
+如果 demo 输出正确，下一步直接看 [开发者手册](/zh/guides/developer-handbook/)。它会把同一套模型拆成启动、授权模型、可复制 API 请求、SDK 示例、凭证选择、AdminGrant 规则和生产越权测试。只需要业务 endpoint 流程时，也可以看较短的 [接入你的应用](/zh/guides/integrate-your-app/)。
 
 ## 启动 API
 

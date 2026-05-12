@@ -22,7 +22,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Start Here
 
-If you are adding Plystra to an existing backend, start with the Developer Handbook. It gives you the concrete object model, API calls, credential choices, security boundaries, SDK examples, and backend guard flow for the full path:
+If you are adding Plystra to an existing backend, start with the Developer Handbook. It is split into focused pages for the concrete object model, API calls, credential choices, security boundaries, SDK examples, and backend guard flow:
 
 ```text
 register resource type -> create Space and identities -> grant role -> register resource -> call authz/check
@@ -30,7 +30,7 @@ register resource type -> create Space and identities -> grant role -> register 
 
 <CardGrid>
 	<Card title="Developer handbook" icon="open-book" href="/guides/developer-handbook/">
-		The detailed production integration path: run Core, model identity, create resources, assign roles, create API keys, call authz, and test boundaries.
+		The complete production integration path, split into short pages for setup, identity modeling, permissions, API keys, SDKs, and boundary tests.
 	</Card>
 	<Card title="Integrate an app" icon="right-arrow" href="/guides/integrate-your-app/">
 		Create the exact Plystra records needed to protect a business endpoint, then call `/api/v1/authz/check` from your backend.
