@@ -5,7 +5,7 @@ description: Migrated from the Core repository and updated for the current v1.0 
 
 # Core API
 
-Plystra Core exposes a pre-1.0 `/api/v1` HTTP API.
+Plystra Core exposes the v1.0 `/api/v1` HTTP API.
 
 All successful responses use:
 
@@ -94,14 +94,18 @@ alice@example.com / plystra-demo
 bob@example.com / plystra-demo
 ```
 
-OpenAPI artifacts live in:
+OpenAPI artifacts are generated from the current Go API contract with `swaggest/openapi-go` and live in the Core repository:
 
 ```text
-openapi/plystra.v0.6.0.json
-openapi/plystra.v0.6.0.yaml
 openapi/plystra.v1.0.0.json
 openapi/plystra.v1.0.0.yaml
 ```
 
-The API is converging on v1.0. Response envelopes use one canonical top-level `request_id`; Core does not return a legacy `meta.request_id`.
+They include request bodies, response envelopes, security schemes, endpoint tags, and grouped API sections. Regenerate them from Core with:
+
+```bash
+make openapi
+```
+
+Response envelopes use one canonical top-level `request_id`; Core does not return a legacy `meta.request_id`.
 

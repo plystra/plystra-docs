@@ -10,6 +10,8 @@ openapi/plystra.v1.0.0.yaml
 openapi/plystra.v1.0.0.json
 ```
 
+The artifacts are generated from the current Go API contract with `swaggest/openapi-go`. They include request bodies, response envelopes, security schemes, endpoint tags, and grouped API sections.
+
 If you want to connect an application rather than browse every endpoint, start with [Integrate Your App](/guides/integrate-your-app/). It gives the full object setup and backend guard flow first, then this page can be used as a reference.
 
 ## Response Envelope

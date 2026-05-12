@@ -56,3 +56,18 @@ Authorization: Bearer <access_token>
 - `POST /api/v1/authz/check`
 - `POST /api/v1/authz/explain`
 - `GET /api/v1/audit/logs`
+
+## OpenAPI
+
+OpenAPI 文件由 Core 当前 Go API contract 通过 `swaggest/openapi-go` 自动生成，包含 request body、response envelope、security scheme、endpoint tags 和分组：
+
+```text
+openapi/plystra.v1.0.0.json
+openapi/plystra.v1.0.0.yaml
+```
+
+在 Core 仓库中重新生成：
+
+```bash
+make openapi
+```

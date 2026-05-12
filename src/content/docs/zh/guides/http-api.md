@@ -10,6 +10,8 @@ openapi/plystra.v1.0.0.yaml
 openapi/plystra.v1.0.0.json
 ```
 
+这些文件由当前 Go API contract 通过 `swaggest/openapi-go` 自动生成，包含 request body、response envelope、security scheme、endpoint tags 和接口分组。
+
 如果你的目标是把现有应用接进来，而不是逐个浏览 endpoint，先看 [接入你的应用](/zh/guides/integrate-your-app/)。那篇会先给完整对象创建和后端保护流程，本页更适合作为 API 参考。
 
 ## 响应 envelope
