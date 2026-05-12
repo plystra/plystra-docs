@@ -26,6 +26,7 @@ export default defineConfig({
 					translations: { 'zh-CN': '开始' },
 					items: [
 						{ label: 'Quickstart', translations: { 'zh-CN': '快速开始' }, slug: 'getting-started' },
+						{ label: 'Developer Handbook', translations: { 'zh-CN': '开发者手册' }, slug: 'guides/developer-handbook' },
 						{ label: 'Integrate Your App', translations: { 'zh-CN': '接入你的应用' }, slug: 'guides/integrate-your-app' },
 						{ label: 'SDKs', translations: { 'zh-CN': 'SDK' }, slug: 'guides/sdks' },
 					],
@@ -54,6 +55,7 @@ export default defineConfig({
 						{ label: 'Configuration', translations: { 'zh-CN': '配置项' }, slug: 'reference/configuration' },
 						{ label: 'Database and Migrations', translations: { 'zh-CN': '数据库与迁移' }, slug: 'reference/database-and-migrations' },
 						{ label: 'Core API Reference', translations: { 'zh-CN': 'Core API 参考' }, slug: 'reference/core-api' },
+						{ label: 'Admin Auth and Security', translations: { 'zh-CN': 'Admin Auth 与安全边界' }, slug: 'reference/admin-auth-and-security' },
 						{ label: 'Resource Registry', translations: { 'zh-CN': 'Resource Registry' }, slug: 'reference/resource-registry' },
 						{ label: 'Audit Trace', translations: { 'zh-CN': '审计 Trace' }, slug: 'reference/audit-trace' },
 						{ label: 'Ent Database Management', translations: { 'zh-CN': 'Ent 数据库管理' }, slug: 'reference/ent-database-management' },

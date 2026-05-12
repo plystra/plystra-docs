@@ -71,7 +71,7 @@ The demo prints four required traces:
 | Bob approves through the same Member | `allow` | Multiple Users can act through the same Member identity. |
 | Alice uses a revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` is the active authorization bridge. |
 
-If this demo output looks correct, the fastest next step is [Integrate Your App](/guides/integrate-your-app/). That guide turns this same model into copy-paste API calls for your own Space, identities, resources, roles, and backend guard.
+If this demo output looks correct, the fastest next step is the [Developer Handbook](/guides/developer-handbook/). It turns this same model into copy-paste API calls, SDK examples, credential choices, admin grant rules, and production boundary tests. The shorter [Integrate Your App](/guides/integrate-your-app/) guide is also available when you only need the business endpoint flow.
 
 ## Start the API
 
@@ -117,7 +117,7 @@ go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
 
 After the first super admin exists, use `/api/v1/admin/grants` to appoint instance admins, Space admins, and Group admins.
 
-For an end-to-end business integration, use [Integrate Your App](/guides/integrate-your-app/) instead of assembling the individual endpoint calls from scratch.
+For an end-to-end production integration, use the [Developer Handbook](/guides/developer-handbook/) instead of assembling the individual endpoint calls from scratch.
 
 ## Login Flow
 

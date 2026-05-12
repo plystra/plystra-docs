@@ -394,6 +394,126 @@ if errors.As(err, &apiErr) {
 }
 ```
 
+## Production Credential Patterns
+
+Use these patterns consistently across languages.
+
+| Pattern | TypeScript | Python | Go |
+|---|---|---|---|
+| Existing user access token | `new PlystraClient({ baseUrl, accessToken })` | `Plystra(base_url, access_token=token)` | `plystra.NewClient(baseURL, plystra.WithAccessToken(token))` |
+| Existing refresh token | `refreshToken` option, then `auth.refresh()` | `refresh_token=` option, then `auth.refresh()` | `WithRefreshToken(token)`, then `Auth.Refresh(ctx, "")` |
+| Server API key | `new PlystraClient({ baseUrl, apiKey })` | `Plystra(base_url, api_key=key)` | `plystra.NewClient(baseURL, plystra.WithAPIKey(key))` |
+| Password login | `auth.login({ email, password })` | `auth.login(email, password)` | `Auth.Login(ctx, email, password)` |
+| Custom HTTP transport | `fetchImpl`, `timeoutMs`, `defaultHeaders` | pass `httpx.Client` or `httpx.AsyncClient` | `WithHTTPClient`, `WithHeader`, `WithUserAgent` |
+
+Recommended production split:
+
+- Frontend or gateway performs login and stores tokens in your own secure session flow.
+- Backend services receive an access token from the secure session when performing user-driven Core operations.
+- Backend services use API keys for service-to-service authorization checks and automation.
+- Password login remains available for admin tools and bootstrap flows, but routine authorization checks should not replay passwords.
+
+## Authz Check Rules in SDKs
+
+The SDKs do not hide the Core authz contract:
+
+```text
+API key client -> must send actor
+access-token client -> may omit actor to use the session active actor
+```
+
+With API key:
+
+```ts
+await plystra.authz.check({
+  actor: {
+    user_id: "user_alice",
+    member_id: "member_finance_reviewer",
+    user_member_id: "um_alice_finance_reviewer",
+    space_id: "space_acme",
+  },
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
+});
+```
+
+With access token:
+
+```ts
+await plystra.authz.check({
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
+});
+```
+
+If the access token has the wrong active Member, call:
+
+```ts
+await plystra.actor.context();
+await plystra.actor.switchMember({
+  member_id: "member_finance_reviewer",
+  user_member_id: "um_alice_finance_reviewer",
+});
+```
+
+## SDK Module Map
+
+The three SDKs expose the same Core modules with language-specific naming.
+
+| Core area | TypeScript | Python sync/async | Go |
+|---|---|---|---|
+| System | `system.version()`, `health()`, `ready()` | `system.version()`, `health()`, `ready()` | `System.Version`, `Health`, `Ready` |
+| Auth | `auth.login()`, `refresh()`, `logout()` | `auth.login()`, `refresh()`, `logout()` | `Auth.Login`, `Refresh`, `Logout` |
+| Actor | `actor.context()`, `switchMember()` | `actor.context()`, `switch_member()` | `Actor.Context`, `SwitchMember` |
+| Admin grants | `admin.me()`, `listGrants()`, `createGrant()`, `revokeGrant()` | `admin.me()`, `list_grants()`, `create_grant()`, `revoke_grant()` | `Admin.Me`, `ListGrants`, `CreateGrant`, `RevokeGrant` |
+| API keys | `apiKeys.list()`, `create()`, `get()`, `revoke()` | `api_keys.list()`, `create()`, `get()`, `revoke()` | `APIKeys.List`, `Create`, `Get`, `Revoke` |
+| Authorization | `authz.check()`, `explain()` | `authz.check()`, `explain()` | `Authz.Check`, `Explain` |
+| Audit | `audit.list()`, `get()` | `audit.list()`, `get()` | `Audit.List`, `Get` |
+| Users | `users.list()`, `create()`, `get()`, `update()`, `disable()`, `restore()` | same snake_case module methods | `Users.List`, `Create`, `Get`, `Update`, `Disable`, `Restore` |
+| Spaces | `spaces.list()`, `create()`, `get()`, `update()`, `groups()`, `members()`, `resources()` | same snake_case module methods | `Spaces.List`, `Create`, `Get`, `Update`, `Groups`, `Members`, `Resources` |
+| Groups | `groups.create()`, `get()`, `getInSpace()`, `update()`, `disable()` | `groups.create()`, `get()`, `get_in_space()`, `update()`, `disable()` | `Groups.Create`, `Get`, `GetInSpace`, `Update`, `Disable` |
+| Members | `members.create()`, `get()`, `update()`, `disable()` | same snake_case module methods | `Members.Create`, `Get`, `Update`, `Disable` |
+| UserMembers | `userMembers.create()`, `get()`, `update()`, `revoke()` | `user_members.create()`, `get()`, `update()`, `revoke()` | `UserMembers.Create`, `Get`, `Update`, `Revoke` |
+| Roles | `roles.create()`, `get()`, `update()`, `disable()` | same snake_case module methods | `Roles.Create`, `Get`, `Update`, `Disable` |
+| Member roles | `memberRoles.list()`, `create()`, `get()`, `revoke()` | `member_roles.list()`, `create()`, `get()`, `revoke()` | `MemberRoles.List`, `Create`, `Get`, `Revoke` |
+| Permissions | `permissions.list()`, `create()`, `get()`, `update()`, `disable()` | same snake_case module methods | `Permissions.List`, `Create`, `Get`, `Update`, `Disable` |
+| Role permissions | `rolePermissions.list()`, `create()`, `get()`, `revoke()` | `role_permissions.list()`, `create()`, `get()`, `revoke()` | `RolePermissions.List`, `Create`, `Get`, `Revoke` |
+| Resource registry | `resourceTypes.list()`, `upsert()`, `actions()`, `upsertAction()`, `mapping()`, `upsertMapping()` | `resource_types.*` snake_case methods | `ResourceTypes.*` |
+| Resources | `resources.list()`, `create()`, `get()`, `update()`, `archive()` | `resources.*` snake_case methods | `Resources.*` |
+| Data Console | `data.tables()`, `listRows()`, `getRow()`, `createRow()`, `updateRow()`, `deleteRow()` | `data.*` snake_case methods | `Data.*` |
+| Plugins | `plugins.list()`, `get()`, `install()`, `validateManifest()`, lifecycle and metadata helpers | `plugins.*` snake_case methods | `Plugins.*` |
+| Templates | `templates.list()`, `get()`, `previewInstall()`, `install()` | `templates.*` snake_case methods | `Templates.*` |
+
+Data Console calls require `DATA_CONSOLE_ENABLED=true` and are disabled by default in Core. Metrics are not wrapped as normal JSON SDK methods because `/metrics` returns Prometheus text.
+
+## Error Handling Contract
+
+All SDKs unwrap the Core JSON envelope and raise or return typed API errors.
+
+| Language | Error type | Important fields |
+|---|---|---|
+| TypeScript | `PlystraApiError`, `PlystraAuthError`, `PlystraAuthorizationError`, `PlystraValidationError`, `PlystraNetworkError`, `PlystraTimeoutError` | `status`, `code`, `details`, `requestId`, `traceId`, `auditLogId` |
+| Python | `PlystraAPIError`, `PlystraAuthError`, `PlystraAuthorizationError`, `PlystraValidationError`, `PlystraNetworkError`, `PlystraTimeoutError` | `status_code`, `code`, `details`, `request_id`, `trace_id`, `audit_log_id` |
+| Go | `*plystra.APIError` | `StatusCode`, `Code`, `Message`, `Details`, `RequestID`, `TraceID`, `AuditLogID` |
+
+Treat `authz.check` deny decisions as successful responses. Convert them to your own application `403` after reading `decision` and `deny_code`.
+
+## Release Compatibility
+
+The v1.0 SDKs target the Core v1 HTTP envelope and current management API. Keep SDK and Core versions aligned during the `1.0.0-dev*` phase. When you upgrade Core, upgrade SDKs in the same release window and run:
+
+```text
+system.version
+auth.login / refresh
+admin.me
+api_keys.create / revoke
+authz.check allow
+authz.check deny
+audit.list
+```
+
 ## Plugin SDK
 
 Install:

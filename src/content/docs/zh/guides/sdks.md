@@ -394,6 +394,126 @@ if errors.As(err, &apiErr) {
 }
 ```
 
+## 生产凭证模式
+
+三种 SDK 都支持同一套凭证模型。
+
+| 模式 | TypeScript | Python | Go |
+|---|---|---|---|
+| 已有 user access token | `new PlystraClient({ baseUrl, accessToken })` | `Plystra(base_url, access_token=token)` | `plystra.NewClient(baseURL, plystra.WithAccessToken(token))` |
+| 已有 refresh token | `refreshToken` option，然后 `auth.refresh()` | `refresh_token=`，然后 `auth.refresh()` | `WithRefreshToken(token)`，然后 `Auth.Refresh(ctx, "")` |
+| 服务端 API key | `new PlystraClient({ baseUrl, apiKey })` | `Plystra(base_url, api_key=key)` | `plystra.NewClient(baseURL, plystra.WithAPIKey(key))` |
+| 密码登录 | `auth.login({ email, password })` | `auth.login(email, password)` | `Auth.Login(ctx, email, password)` |
+| 自定义 HTTP transport | `fetchImpl`、`timeoutMs`、`defaultHeaders` | 传入 `httpx.Client` 或 `httpx.AsyncClient` | `WithHTTPClient`、`WithHeader`、`WithUserAgent` |
+
+推荐生产拆分：
+
+- 前端或网关完成登录，并把 token 放进你自己的安全 session 流程。
+- 后端在执行用户驱动的 Core 管理操作时，从安全 session 中读取 access token。
+- 后端服务在做服务到服务授权检查和自动化时使用 API key。
+- 密码登录保留给管理工具和 bootstrap 流程，不建议常规授权检查反复使用密码。
+
+## SDK 中的 Authz Check 规则
+
+SDK 不会隐藏 Core 的授权请求契约：
+
+```text
+API key client -> 必须传 actor
+access-token client -> 可以省略 actor，使用 session active actor
+```
+
+使用 API key：
+
+```ts
+await plystra.authz.check({
+  actor: {
+    user_id: "user_alice",
+    member_id: "member_finance_reviewer",
+    user_member_id: "um_alice_finance_reviewer",
+    space_id: "space_acme",
+  },
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
+});
+```
+
+使用 access token：
+
+```ts
+await plystra.authz.check({
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
+});
+```
+
+如果 access token 的 active Member 不对：
+
+```ts
+await plystra.actor.context();
+await plystra.actor.switchMember({
+  member_id: "member_finance_reviewer",
+  user_member_id: "um_alice_finance_reviewer",
+});
+```
+
+## SDK 模块表
+
+三个 SDK 暴露相同 Core 模块，只是命名风格不同。
+
+| Core area | TypeScript | Python sync/async | Go |
+|---|---|---|---|
+| System | `system.version()`、`health()`、`ready()` | `system.version()`、`health()`、`ready()` | `System.Version`、`Health`、`Ready` |
+| Auth | `auth.login()`、`refresh()`、`logout()` | `auth.login()`、`refresh()`、`logout()` | `Auth.Login`、`Refresh`、`Logout` |
+| Actor | `actor.context()`、`switchMember()` | `actor.context()`、`switch_member()` | `Actor.Context`、`SwitchMember` |
+| Admin grants | `admin.me()`、`listGrants()`、`createGrant()`、`revokeGrant()` | `admin.me()`、`list_grants()`、`create_grant()`、`revoke_grant()` | `Admin.Me`、`ListGrants`、`CreateGrant`、`RevokeGrant` |
+| API keys | `apiKeys.list()`、`create()`、`get()`、`revoke()` | `api_keys.list()`、`create()`、`get()`、`revoke()` | `APIKeys.List`、`Create`、`Get`、`Revoke` |
+| Authorization | `authz.check()`、`explain()` | `authz.check()`、`explain()` | `Authz.Check`、`Explain` |
+| Audit | `audit.list()`、`get()` | `audit.list()`、`get()` | `Audit.List`、`Get` |
+| Users | `users.list()`、`create()`、`get()`、`update()`、`disable()`、`restore()` | 同名 snake_case 模块方法 | `Users.List`、`Create`、`Get`、`Update`、`Disable`、`Restore` |
+| Spaces | `spaces.list()`、`create()`、`get()`、`update()`、`groups()`、`members()`、`resources()` | 同名 snake_case 模块方法 | `Spaces.List`、`Create`、`Get`、`Update`、`Groups`、`Members`、`Resources` |
+| Groups | `groups.create()`、`get()`、`getInSpace()`、`update()`、`disable()` | `groups.create()`、`get()`、`get_in_space()`、`update()`、`disable()` | `Groups.Create`、`Get`、`GetInSpace`、`Update`、`Disable` |
+| Members | `members.create()`、`get()`、`update()`、`disable()` | 同名 snake_case 模块方法 | `Members.Create`、`Get`、`Update`、`Disable` |
+| UserMembers | `userMembers.create()`、`get()`、`update()`、`revoke()` | `user_members.create()`、`get()`、`update()`、`revoke()` | `UserMembers.Create`、`Get`、`Update`、`Revoke` |
+| Roles | `roles.create()`、`get()`、`update()`、`disable()` | 同名 snake_case 模块方法 | `Roles.Create`、`Get`、`Update`、`Disable` |
+| Member roles | `memberRoles.list()`、`create()`、`get()`、`revoke()` | `member_roles.list()`、`create()`、`get()`、`revoke()` | `MemberRoles.List`、`Create`、`Get`、`Revoke` |
+| Permissions | `permissions.list()`、`create()`、`get()`、`update()`、`disable()` | 同名 snake_case 模块方法 | `Permissions.List`、`Create`、`Get`、`Update`、`Disable` |
+| Role permissions | `rolePermissions.list()`、`create()`、`get()`、`revoke()` | `role_permissions.list()`、`create()`、`get()`、`revoke()` | `RolePermissions.List`、`Create`、`Get`、`Revoke` |
+| Resource registry | `resourceTypes.list()`、`upsert()`、`actions()`、`upsertAction()`、`mapping()`、`upsertMapping()` | `resource_types.*` snake_case 方法 | `ResourceTypes.*` |
+| Resources | `resources.list()`、`create()`、`get()`、`update()`、`archive()` | `resources.*` snake_case 方法 | `Resources.*` |
+| Data Console | `data.tables()`、`listRows()`、`getRow()`、`createRow()`、`updateRow()`、`deleteRow()` | `data.*` snake_case 方法 | `Data.*` |
+| Plugins | `plugins.list()`、`get()`、`install()`、`validateManifest()`、lifecycle 和 metadata helper | `plugins.*` snake_case 方法 | `Plugins.*` |
+| Templates | `templates.list()`、`get()`、`previewInstall()`、`install()` | `templates.*` snake_case 方法 | `Templates.*` |
+
+Data Console 默认在 Core 中关闭，需要 `DATA_CONSOLE_ENABLED=true`。Metrics 返回 Prometheus text，不作为普通 JSON SDK 模块封装。
+
+## 错误处理契约
+
+所有 SDK 都会解开 Core JSON envelope，并抛出或返回 typed API error。
+
+| 语言 | Error type | 关键字段 |
+|---|---|---|
+| TypeScript | `PlystraApiError`、`PlystraAuthError`、`PlystraAuthorizationError`、`PlystraValidationError`、`PlystraNetworkError`、`PlystraTimeoutError` | `status`、`code`、`details`、`requestId`、`traceId`、`auditLogId` |
+| Python | `PlystraAPIError`、`PlystraAuthError`、`PlystraAuthorizationError`、`PlystraValidationError`、`PlystraNetworkError`、`PlystraTimeoutError` | `status_code`、`code`、`details`、`request_id`、`trace_id`、`audit_log_id` |
+| Go | `*plystra.APIError` | `StatusCode`、`Code`、`Message`、`Details`、`RequestID`、`TraceID`、`AuditLogID` |
+
+`authz.check` 的 deny 是成功响应，不是 SDK 异常。读取 `decision` 和 `deny_code` 后，在你的业务 API 中转换成 `403`。
+
+## Release 兼容性
+
+v1.0 SDK 面向 Core v1 HTTP envelope 和当前管理 API。`1.0.0-dev*` 阶段建议 Core 和 SDK 同步升级。升级 Core 后，同一发布窗口升级 SDK，并至少跑通：
+
+```text
+system.version
+auth.login / refresh
+admin.me
+api_keys.create / revoke
+authz.check allow
+authz.check deny
+audit.list
+```
+
 ## Plugin SDK
 
 安装：

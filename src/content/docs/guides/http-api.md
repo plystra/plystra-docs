@@ -128,6 +128,8 @@ API key calls must send the nested `actor`. Bearer session calls may omit `actor
 
 All routes in this section require either `Authorization: Bearer <access_token>` with an active admin grant or `X-Plystra-API-Key: <api_key>` with matching API key permissions. `instance_super_admin` allows everything for user sessions. `instance_admin` is permission-key scoped, `space_admin` is limited to one Space, and `group_admin` is limited to one Group subtree. API keys use `instance`, `space`, and `group` scopes.
 
+For the full route permission matrix and anti-escalation rules, see [Admin Auth and Security](/reference/admin-auth-and-security/). That page is the source of truth for who can create API keys, who can create AdminGrants, and how instance, Space, and Group scopes are enforced.
+
 | Group | Routes |
 |---|---|
 | Admin grants | `GET /api/v1/admin/me`, `GET/POST /api/v1/admin/grants`, `GET /api/v1/admin/grants/{id}`, `POST /api/v1/admin/grants/{id}/revoke` |

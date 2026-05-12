@@ -5,8 +5,8 @@ template: splash
 hero:
   tagline: Self-hosted identity and authorization core for applications that need account-identity separation, scoped resource permissions, and append-only audit logs.
   actions:
-    - text: Integrate Your App
-      link: /guides/integrate-your-app/
+    - text: Developer Handbook
+      link: /guides/developer-handbook/
       icon: right-arrow
     - text: Quickstart
       link: /getting-started/
@@ -22,13 +22,16 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Start Here
 
-If you are adding Plystra to an existing backend, start with the integration guide. It gives you the concrete object model, API calls, and backend guard code for the full path:
+If you are adding Plystra to an existing backend, start with the Developer Handbook. It gives you the concrete object model, API calls, credential choices, security boundaries, SDK examples, and backend guard flow for the full path:
 
 ```text
 register resource type -> create Space and identities -> grant role -> register resource -> call authz/check
 ```
 
 <CardGrid>
+	<Card title="Developer handbook" icon="open-book" href="/guides/developer-handbook/">
+		The detailed production integration path: run Core, model identity, create resources, assign roles, create API keys, call authz, and test boundaries.
+	</Card>
 	<Card title="Integrate an app" icon="right-arrow" href="/guides/integrate-your-app/">
 		Create the exact Plystra records needed to protect a business endpoint, then call `/api/v1/authz/check` from your backend.
 	</Card>
@@ -37,6 +40,9 @@ register resource type -> create Space and identities -> grant role -> register 
 	</Card>
 	<Card title="Check the API surface" icon="document" href="/guides/http-api/">
 		Review response envelopes, authentication layers, protected routes, and endpoint groups.
+	</Card>
+	<Card title="Admin auth and security" icon="lock" href="/reference/admin-auth-and-security/">
+		Understand AdminGrant levels, API key scopes, route permission mapping, and anti-escalation rules.
 	</Card>
 </CardGrid>
 

@@ -71,7 +71,7 @@ demo 会打印四个必需 trace：
 | Bob 通过同一个 Member 审批 | `allow` | 多个 User 可以通过同一个 Member 身份行动。 |
 | Alice 使用 revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` 是有效授权桥。 |
 
-如果 demo 输出正确，下一步直接看 [接入你的应用](/zh/guides/integrate-your-app/)。那篇会把同一套模型变成可复制的 API 请求，用于创建你自己的 Space、身份链、资源、角色和后端授权保护。
+如果 demo 输出正确，下一步直接看 [开发者手册](/zh/guides/developer-handbook/)。那篇会把同一套模型变成可复制的 API 请求、SDK 示例、凭证选择、AdminGrant 规则和生产越权测试。只需要业务 endpoint 流程时，也可以看较短的 [接入你的应用](/zh/guides/integrate-your-app/)。
 
 ## 启动 API
 
@@ -117,7 +117,7 @@ go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
 
 第一个 super admin 创建后，再通过 `/api/v1/admin/grants` 任命 instance admin、Space admin 和 Group admin。
 
-如果你要完成一条真实业务接入路径，建议直接看 [接入你的应用](/zh/guides/integrate-your-app/)，不用自己从零拼每个 endpoint。
+如果你要完成生产级真实业务接入，建议直接看 [开发者手册](/zh/guides/developer-handbook/)，不用自己从零拼每个 endpoint。
 
 ## 登录流程
 

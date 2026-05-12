@@ -128,6 +128,8 @@ API key 调用必须传入嵌套 `actor`。Bearer session 调用可以省略 `ac
 
 本节所有路由都需要 `Authorization: Bearer <access_token>` 加 active admin grant，或 `X-Plystra-API-Key: <api_key>` 加匹配的 API key 权限。用户 session 中 `instance_super_admin` 拥有所有权限；`instance_admin` 按 permission key 授权；`space_admin` 限定单个 Space；`group_admin` 限定一个 Group 子树。API key 使用 `instance`、`space`、`group` scope。
 
+完整路由权限矩阵和防提权规则见 [Admin Auth 与安全边界](/zh/reference/admin-auth-and-security/)。该页是判断谁能创建 API key、谁能创建 AdminGrant、instance/Space/Group scope 如何强制执行的依据。
+
 | Group | Routes |
 |---|---|
 | Admin grants | `GET /api/v1/admin/me`、`GET/POST /api/v1/admin/grants`、`GET /api/v1/admin/grants/{id}`、`POST /api/v1/admin/grants/{id}/revoke` |

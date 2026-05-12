@@ -5,8 +5,8 @@ template: splash
 hero:
   tagline: 用于账号身份分离、资源级作用域权限、可解释授权决策和追加式审计日志的自托管 Core。
   actions:
-    - text: 接入你的应用
-      link: /zh/guides/integrate-your-app/
+    - text: 开发者手册
+      link: /zh/guides/developer-handbook/
       icon: right-arrow
     - text: 快速开始
       link: /zh/getting-started/
@@ -22,13 +22,16 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## 从这里开始
 
-如果你要把 Plystra 接到现有后端，先看接入指南。它会用真实 API 带你走完整路径：
+如果你要把 Plystra 接到现有后端，先看开发者手册。它会用真实 API 带你走完整路径，并明确凭证选择、安全边界、SDK 用法、排错和测试方式：
 
 ```text
 注册资源类型 -> 创建 Space 和身份链 -> 授权角色 -> 登记资源 -> 调用 authz/check
 ```
 
 <CardGrid>
+	<Card title="开发者手册" icon="open-book" href="/zh/guides/developer-handbook/">
+		完整生产接入路径：启动 Core、建模身份、创建资源、分配角色、创建 API key、调用 authz 并测试越权边界。
+	</Card>
 	<Card title="接入现有应用" icon="right-arrow" href="/zh/guides/integrate-your-app/">
 		创建保护业务接口所需的 Plystra 记录，然后在你的后端调用 `/api/v1/authz/check`。
 	</Card>
@@ -37,6 +40,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 	</Card>
 	<Card title="查看 API 面" icon="document" href="/zh/guides/http-api/">
 		查看响应 envelope、认证层、受保护路由和 endpoint 分组。
+	</Card>
+	<Card title="Admin Auth 与安全边界" icon="lock" href="/zh/reference/admin-auth-and-security/">
+		理解 AdminGrant level、API key scope、路由权限映射和防提权规则。
 	</Card>
 </CardGrid>
 
