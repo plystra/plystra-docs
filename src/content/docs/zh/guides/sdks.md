@@ -538,7 +538,7 @@ Data Console 默认在 Core 中关闭，需要 `DATA_CONSOLE_ENABLED=true`。Met
 
 ## Release 兼容性
 
-v1.0 SDK 面向 Core v1 HTTP envelope 和当前管理 API。`1.0.0-dev*` 阶段建议 Core 和 SDK 同步升级。升级 Core 后，同一发布窗口升级 SDK，并至少跑通：
+v1.0 SDK 面向 Core v1 HTTP envelope 和当前管理 API。`1.0.0-rc*` 阶段建议 Core 和 SDK 同步升级。升级 Core 后，同一发布窗口升级 SDK，并至少跑通：
 
 ```text
 system.version

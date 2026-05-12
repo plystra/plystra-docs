@@ -538,7 +538,7 @@ Treat `authz.check` deny decisions as successful responses. Convert them to your
 
 ## Release Compatibility
 
-The v1.0 SDKs target the Core v1 HTTP envelope and current management API. Keep SDK and Core versions aligned during the `1.0.0-dev*` phase. When you upgrade Core, upgrade SDKs in the same release window and run:
+The v1.0 SDKs target the Core v1 HTTP envelope and current management API. Keep SDK and Core versions aligned during the `1.0.0-rc*` phase. When you upgrade Core, upgrade SDKs in the same release window and run:
 
 ```text
 system.version
