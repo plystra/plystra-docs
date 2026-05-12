@@ -19,9 +19,6 @@ Successful single-object responses:
 ```json
 {
   "data": {},
-  "meta": {
-    "request_id": "req_..."
-  },
   "request_id": "req_..."
 }
 ```
@@ -36,9 +33,6 @@ List responses include pagination:
     "cursor": null,
     "has_more": false
   },
-  "meta": {
-    "request_id": "req_..."
-  },
   "request_id": "req_..."
 }
 ```
@@ -51,9 +45,6 @@ Errors:
     "code": "VALIDATION_FAILED",
     "message": "Request body is invalid JSON.",
     "details": null,
-    "request_id": "req_..."
-  },
-  "meta": {
     "request_id": "req_..."
   },
   "request_id": "req_..."
@@ -81,12 +72,6 @@ If a protected route is called without a valid session or API key, Core returns 
 | `GET` | `/api/v1/health` |
 | `GET` | `/api/v1/ready` |
 | `GET` | `/api/v1/version` |
-| `GET` | `/api/v1/system/health` |
-| `GET` | `/api/v1/system/ready` |
-| `GET` | `/api/v1/system/version` |
-| `GET` | `/system/health` |
-| `GET` | `/system/ready` |
-| `GET` | `/system/version` |
 
 `/metrics` is routed publicly so the metrics handler can return `FEATURE_DISABLED` or validate a metrics token. It is disabled by default.
 
@@ -100,7 +85,7 @@ If a protected route is called without a valid session or API key, Core returns 
 | `GET` | `/api/v1/actor/context` | Requires access token. Returns active actor and available members. |
 | `POST` | `/api/v1/actor/switch-member` | Requires access token. Switches active Member/UserMember binding. |
 
-Login failures are rate-limited by normalized email and source IP. New passwords are stored with Argon2id; legacy PBKDF2 hashes are accepted and upgraded after successful login. Changing a User password revokes existing sessions for that User.
+Login failures are rate-limited by normalized email and source IP. Passwords are stored and verified with Argon2id. Changing a User password revokes existing sessions for that User.
 
 Demo credentials seeded for local development:
 
@@ -135,7 +120,9 @@ curl -X POST http://localhost:8080/api/v1/authz/check \
   }'
 ```
 
-HTTP authz ignores client-supplied body `request_id`, `ip`, and `user_agent`; canonical values are server-derived.
+HTTP authz does not accept body `request_id`, `ip`, or `user_agent`; canonical values are server-derived.
+
+API key calls must send the nested `actor`. Bearer session calls may omit `actor`, in which case Core uses the session's active actor.
 
 ## Core Management Routes
 
@@ -146,7 +133,7 @@ All routes in this section require either `Authorization: Bearer <access_token>`
 | Admin grants | `GET /api/v1/admin/me`, `GET/POST /api/v1/admin/grants`, `GET /api/v1/admin/grants/{id}`, `POST /api/v1/admin/grants/{id}/revoke` |
 | API keys | `GET/POST /api/v1/api-keys`, `GET /api/v1/api-keys/{id}`, `POST /api/v1/api-keys/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
-| AuditLog | `GET /api/v1/audit-logs`, `GET /api/v1/audit-logs/{id}`, legacy `/api/v1/audit/logs` aliases |
+| AuditLog | `GET /api/v1/audit/logs`, `GET /api/v1/audit/logs/{id}` |
 | Resource Registry | `GET/POST /api/v1/resource-types`, `GET /api/v1/resource-types/{key}`, `GET/POST /api/v1/resource-types/{key}/actions`, `GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
 | Users | `GET/POST /api/v1/users`, `GET/PATCH /api/v1/users/{id}`, `POST /api/v1/users/{id}/disable`, `POST /api/v1/users/{id}/restore` |
 | Spaces | `GET/POST /api/v1/spaces`, `GET/PATCH /api/v1/spaces/{id}`, `POST /api/v1/spaces/{id}/disable`, `POST /api/v1/spaces/{id}/restore` |
@@ -160,7 +147,7 @@ All routes in this section require either `Authorization: Bearer <access_token>`
 
 User responses are sanitized and do not return `password_hash`.
 
-API key creation returns plaintext `api_key` once. Store it in a secret manager. Core stores only HMAC hashes. The required permission to create keys is `api_keys:create`; use `api_keys:read`, `api_keys:revoke`, or `api_keys:manage` for read/revoke/administration.
+API key creation returns plaintext `api_key` once. Store it in a secret manager. Core stores only HMAC hashes. The required permission to create keys is `api_keys:create`; use `api_keys:read`, `api_keys:revoke`, or `api_keys:manage` for read/revoke/administration. A caller can only place permission keys on a new API key if the caller already holds those permissions for the target scope.
 
 ## Data Console Preview Routes
 

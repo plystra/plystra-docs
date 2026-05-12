@@ -68,13 +68,6 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Compatibility',
-					translations: { 'zh-CN': '兼容性' },
-					items: [
-						{ label: 'Request ID Envelope', translations: { 'zh-CN': 'Request ID Envelope' }, slug: 'compatibility/request-id-envelope' },
-					],
-				},
-				{
 					label: 'Examples',
 					translations: { 'zh-CN': '示例' },
 					items: [

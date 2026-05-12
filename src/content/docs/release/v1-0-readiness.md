@@ -44,9 +44,9 @@ not block the Core release.
   bytes, and error code.
 - Environment-based configuration using PRD names such as `SERVER_HOST`,
   `SERVER_PORT`, `SERVER_MODE`, `DATABASE_URL`, `LOG_FORMAT`,
-  `CORS_ALLOWED_ORIGINS`, `PLYSTRA_SESSION_SECRET`, `AUDIT_WRITE_MODE`,
-  and `TRACE_VERSION`, while keeping previous aliases such
-  as `JWT_SECRET` where they existed.
+  `CORS_ALLOWED_ORIGINS`, `PLYSTRA_SESSION_SECRET`,
+  `PLYSTRA_API_KEY_SECRET`, `AUDIT_WRITE_MODE`, and `TRACE_VERSION`.
+
 - Self-hosted baseline: `Dockerfile`, `docker-compose.yml`, `.env.example`,
   migration command, seed demo command, run command, and health check.
 - Built-in Finance Reviewer demo data and four required demo traces.

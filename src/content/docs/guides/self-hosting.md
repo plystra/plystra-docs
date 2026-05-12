@@ -81,12 +81,12 @@ When `SERVER_MODE=production`, startup validates:
 | Setting | Production rule |
 |---|---|
 | `DATABASE_URL` or `PLYSTRA_DATABASE_URL` | Required; must not use default `plystra:plystra` credentials. |
-| `PLYSTRA_SESSION_SECRET`, `SESSION_SECRET`, `JWT_SECRET`, or `PLYSTRA_JWT_SECRET` | At least 32 characters and not a default placeholder. |
-| `PLYSTRA_API_KEY_SECRET` or `API_KEY_SECRET` | At least 32 characters, not a default placeholder, and distinct from the session secret. |
+| `PLYSTRA_SESSION_SECRET` | At least 32 characters and not a default placeholder. |
+| `PLYSTRA_API_KEY_SECRET` | At least 32 characters, not a default placeholder, and distinct from the session secret. |
 | `CORS_ALLOWED_ORIGINS` | Required; must not include `*`. |
 | `SERVER_PUBLIC_URL` or `PLYSTRA_SERVER_PUBLIC_URL` | Required; must not point to localhost. |
 
-`JWT_SECRET` is a compatibility alias. The current runtime uses opaque bearer tokens, stores HMAC token hashes, and does not issue JWT claims.
+The current runtime uses opaque bearer tokens, stores HMAC token hashes, and does not issue JWT claims.
 
 ## First Instance Super Admin
 

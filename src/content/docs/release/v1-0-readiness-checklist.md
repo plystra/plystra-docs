@@ -399,11 +399,6 @@ v1.0 requires standard operational endpoints.
 - [ ] `GET /api/v1/ready`
 - [ ] `GET /api/v1/version`
 
-### Compatibility Endpoints
-
-- [ ] Legacy `/system/*` compatibility paths are preserved if previously shipped.
-- [ ] Legacy compatibility behavior is documented.
-
 ### Required Behavior
 
 #### `/api/v1/health`
@@ -618,20 +613,19 @@ A production operator must be able to correlate request logs, API responses, and
 
 ## 14. API Envelope and Request ID Gate
 
-v1.0 must document request ID compatibility behavior.
+v1.0 must document canonical request ID behavior.
 
 ### Required
 
 - [ ] Top-level `request_id` is returned.
-- [ ] Legacy `meta.request_id` is returned if backward compatibility requires it.
-- [ ] Compatibility behavior is documented.
-- [ ] OpenAPI documents both fields if both are returned.
+- [ ] `meta.request_id` is not returned.
+- [ ] OpenAPI documents only the canonical top-level field.
 - [ ] Tests assert envelope shape.
-- [ ] Release notes explain the compatibility behavior.
+- [ ] Release notes explain the canonical envelope.
 
 ### Acceptance Rule
 
-Existing clients using `meta.request_id` should not break in v1.0, and new clients can use top-level `request_id`.
+Clients should read the top-level `request_id`.
 
 ---
 
@@ -647,7 +641,7 @@ v1.0 requires an accurate OpenAPI document.
 - [ ] Request schemas match accepted payloads.
 - [ ] Response schemas match actual responses.
 - [ ] Error envelope is documented.
-- [ ] `request_id` compatibility is documented.
+- [ ] Canonical top-level `request_id` behavior is documented.
 - [ ] Deny codes are documented or referenced.
 - [ ] OpenAPI matches handler behavior.
 - [ ] CI or tests detect major route drift if possible.
@@ -670,7 +664,7 @@ v1.0 must include documentation sufficient for self-hosting and integration.
 - [ ] v1.0 RC test plan
 - [ ] v1.0 release notes
 - [ ] migration and upgrade guide
-- [ ] request ID envelope compatibility doc
+- [ ] canonical request ID envelope doc
 - [ ] OpenAPI v1.0
 - [ ] authz check/explain guide
 - [ ] Resource Registry guide

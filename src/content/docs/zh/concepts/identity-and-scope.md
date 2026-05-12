@@ -22,7 +22,7 @@ User -> UserMember -> Member -> Space
 
 ## 授权输入
 
-API 接受嵌套 actor，也保留旧的扁平字段：
+HTTP API 只接受一个规范的嵌套 actor 对象。API key 调用必须显式传入它；Bearer session 调用可以省略，Core 会使用登录或 `POST /api/v1/actor/switch-member` 选中的 session active actor。
 
 ```json
 {
@@ -44,7 +44,7 @@ HTTP 请求中的 canonical request metadata 由服务端负责：
 - `ip` 来自服务端解析出的 remote IP 和 trusted proxy 逻辑。
 - `user_agent` 来自 HTTP header。
 
-HTTP authz handler 会忽略 body 里的 `request_id`、`ip` 和 `user_agent`。
+HTTP authz request contract 不包含 body `request_id`、`ip` 或 `user_agent`。
 
 ## 作用域规则
 

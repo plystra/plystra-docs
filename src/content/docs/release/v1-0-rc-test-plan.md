@@ -35,7 +35,7 @@ audit correctness
 Resource Registry correctness
 Core CRUD API correctness
 OpenAPI correctness
-request ID compatibility
+request ID canonical envelope
 release documentation correctness
 Bearer user session protection for sensitive APIs
 disabled-by-default data and metrics surfaces
@@ -176,7 +176,7 @@ Execute the RC test plan in this order:
 12. Core CRUD smoke test
 13. AuditLog smoke test
 14. OpenAPI verification
-15. Request ID compatibility verification
+15. request ID canonical envelope verification
 16. Production safety verification
 17. Documentation verification
 18. RC sign-off
@@ -455,12 +455,12 @@ curl -s http://localhost:8080/api/v1/ready
 curl -s http://localhost:8080/api/v1/version
 ```
 
-If legacy compatibility paths exist:
+Canonical operational routes:
 
 ```bash
-curl -s http://localhost:8080/system/health
-curl -s http://localhost:8080/system/ready
-curl -s http://localhost:8080/system/version
+curl -s http://localhost:8080/api/v1/health
+curl -s http://localhost:8080/api/v1/ready
+curl -s http://localhost:8080/api/v1/version
 ```
 
 ### Expected Results
@@ -653,7 +653,7 @@ Prove API docs match implementation.
 - Request schemas match accepted payloads.
 - Response schemas match actual responses.
 - Error envelope is documented.
-- `request_id` compatibility is documented.
+- Canonical top-level `request_id` behavior is documented.
 - Deny codes are documented or referenced.
 - Authz trace schema is documented.
 
@@ -665,11 +665,11 @@ Prove API docs match implementation.
 
 ---
 
-## 18. Request ID Compatibility Verification
+## 18. Request ID Verification
 
 ### Objective
 
-Prove old and new request ID behavior is compatible.
+Prove every API response carries one canonical top-level request ID.
 
 ### Required
 
@@ -681,23 +681,12 @@ Responses should include:
 }
 ```
 
-If legacy envelope compatibility is preserved, responses should also include:
-
-```json
-{
-  "meta": {
-    "request_id": "req_..."
-  }
-}
-```
-
 ### Checks
 
 - Top-level `request_id` exists.
-- `meta.request_id` exists if compatibility promise applies.
-- Both values match.
-- OpenAPI documents both if both are returned.
-- Release notes explain this behavior.
+- `meta.request_id` is not returned.
+- OpenAPI documents the top-level field only.
+- Structured logs and AuditLog records can be correlated through the same request ID.
 
 ---
 
@@ -738,7 +727,7 @@ Quickstart
 v1.0 readiness checklist
 v1.0 RC test plan
 v1.0 release notes
-request ID compatibility
+request ID canonical envelope
 migration and upgrade guide
 OpenAPI v1.0
 Ent integration guideline
@@ -753,7 +742,7 @@ Ent integration guideline
 - Optional components are clearly marked optional.
 - v1.0 blocking scope is clear.
 - Production migration behavior is documented.
-- Request ID compatibility is documented.
+- request ID canonical envelope is documented.
 
 ---
 
@@ -777,7 +766,7 @@ Before tagging, fill this out.
 | CRUD smoke tests |  |  |
 | AuditLog |  |  |
 | OpenAPI |  |  |
-| Request ID compatibility |  |  |
+| request ID canonical envelope |  |  |
 | Production safety |  |  |
 | Docs |  |  |
 

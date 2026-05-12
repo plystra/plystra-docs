@@ -17,6 +17,8 @@ SDK 应该放在可信服务端代码中使用。不要把管理 access token �
 
 SDK 仍保留账号密码登录能力，适合管理工具和 bootstrap 流程；常规后端检查应使用 access token 或 API key。
 
+对于 `authz.check`，API key 客户端必须传入嵌套 `actor`。access token 客户端可以省略，Core 会使用 token 的 active actor。
+
 ## API keys
 
 API key 是机器凭证，支持 `instance`、`space`、`group` 三层 scope，并携带显式 permission key，例如 `authz:check`、`resources:read`、`api_keys:create`。
@@ -209,10 +211,12 @@ from plystra import Plystra
 
 with Plystra("https://plystra.internal", api_key=os.environ["PLYSTRA_API_KEY"]) as plystra:
     decision = plystra.authz.check(
-        actor_user_id="user_alice",
-        actor_member_id="member_finance_reviewer",
-        actor_user_member_id="um_alice_finance_reviewer",
-        space_id="space_acme",
+        actor={
+            "user_id": "user_alice",
+            "space_id": "space_acme",
+            "member_id": "member_finance_reviewer",
+            "user_member_id": "um_alice_finance_reviewer",
+        },
         resource_type="invoice",
         resource_id="invoice_001",
         action="approve",
@@ -315,22 +319,22 @@ import (
 
 func main() {
 	ctx := context.Background()
-client := plystra.NewClient("http://localhost:8080")
+	client := plystra.NewClient("http://localhost:8080")
 
-if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
-	log.Fatal(err)
-}
-accessToken, refreshToken := client.Tokens()
-saveSession(accessToken, refreshToken)
+	if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
+		log.Fatal(err)
+	}
+	accessToken, refreshToken := client.Tokens()
+	saveSession(accessToken, refreshToken)
 
-if _, err := client.Auth.Refresh(ctx, ""); err != nil {
-	log.Fatal(err)
-}
-accessToken, refreshToken = client.Tokens()
-saveSession(accessToken, refreshToken)
+	if _, err := client.Auth.Refresh(ctx, ""); err != nil {
+		log.Fatal(err)
+	}
+	accessToken, refreshToken = client.Tokens()
+	saveSession(accessToken, refreshToken)
 
-decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
-		Actor: plystra.ActorContext{
+	decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+		Actor: &plystra.ActorContext{
 			UserID:       "user_alice",
 			SpaceID:      "space_acme",
 			MemberID:     "member_finance_reviewer",
@@ -357,6 +361,12 @@ client := plystra.NewClient(
 )
 
 decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	Actor: &plystra.ActorContext{
+		UserID:       "user_alice",
+		SpaceID:      "space_acme",
+		MemberID:     "member_finance_reviewer",
+		UserMemberID: "um_alice_finance_reviewer",
+	},
 	ResourceType: "invoice",
 	ResourceID:   "invoice_001",
 	Action:       "approve",

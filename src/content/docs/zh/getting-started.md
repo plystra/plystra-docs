@@ -87,8 +87,6 @@ curl http://localhost:8080/api/v1/ready
 curl http://localhost:8080/api/v1/version
 ```
 
-`/system/*` 和 `/api/v1/system/*` 下也保留了兼容别名。
-
 ## 调用受保护 API
 
 所有非公开 Core API 都需要某个拥有 active admin grant 的用户 Bearer access token。
@@ -108,7 +106,7 @@ export PLYSTRA_ACCESS_TOKEN=$(
 
 ```bash
 curl -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
-  http://localhost:8080/api/v1/audit-logs
+  http://localhost:8080/api/v1/audit/logs
 ```
 
 非 demo 数据库可以通过 `plystractl` 创建第一个 instance super admin。这个命令只会在没有 active `instance_super_admin` grant 时成功：
@@ -151,7 +149,8 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" \
 
 ```text
 DATABASE_URL
-PLYSTRA_SESSION_SECRET or JWT_SECRET
+PLYSTRA_SESSION_SECRET
+PLYSTRA_API_KEY_SECRET
 CORS_ALLOWED_ORIGINS
 SERVER_PUBLIC_URL
 ```

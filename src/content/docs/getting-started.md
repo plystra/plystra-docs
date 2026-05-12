@@ -87,8 +87,6 @@ curl http://localhost:8080/api/v1/ready
 curl http://localhost:8080/api/v1/version
 ```
 
-Legacy operational aliases also exist under `/system/*` and `/api/v1/system/*`.
-
 ## Use Protected API Routes
 
 All non-public Core API routes require a Bearer access token for a user with an active admin grant.
@@ -108,7 +106,7 @@ Then call protected routes:
 
 ```bash
 curl -H "Authorization: Bearer $PLYSTRA_ACCESS_TOKEN" \
-  http://localhost:8080/api/v1/audit-logs
+  http://localhost:8080/api/v1/audit/logs
 ```
 
 For a non-demo database, create the first instance super admin with `plystractl`. This command only works when no active `instance_super_admin` grant exists:
@@ -151,7 +149,8 @@ Before setting `SERVER_MODE=production`, configure:
 
 ```text
 DATABASE_URL
-PLYSTRA_SESSION_SECRET or JWT_SECRET
+PLYSTRA_SESSION_SECRET
+PLYSTRA_API_KEY_SECRET
 CORS_ALLOWED_ORIGINS
 SERVER_PUBLIC_URL
 ```

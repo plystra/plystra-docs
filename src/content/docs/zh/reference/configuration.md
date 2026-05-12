@@ -13,7 +13,7 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP 端口。 |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | 设为 `production` 启用生产 guard。 |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | `.env.example` 中的本地开发 URL | Public URL。生产必填且不能是 localhost。 |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev10` | version endpoint 返回的 Core 版本。 |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev11` | version endpoint 返回的 Core 版本。 |
 
 ## Database
 
@@ -29,11 +29,10 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
-| `PLYSTRA_SESSION_SECRET` / `SESSION_SECRET` | 开发 placeholder | HMAC hashing opaque bearer tokens 的推荐 secret。 |
-| `PLYSTRA_SESSION_SECRET_PREVIOUS` / `SESSION_SECRET_PREVIOUS` | 空 | session secret 轮换期间可接受的旧 secret，逗号分隔。新 token 始终使用主 secret hash。 |
-| `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | 兼容 placeholder | session secret 的兼容 alias。Core v1.0 不签发 JWT claims。 |
-| `PLYSTRA_API_KEY_SECRET` / `API_KEY_SECRET` | 非生产环境 fallback 到 session secret | HMAC hashing API key 的 secret。生产环境必须使用独立强 secret。 |
-| `PLYSTRA_API_KEY_SECRET_PREVIOUS` / `API_KEY_SECRET_PREVIOUS` | 空 | API key secret 轮换期间可接受的旧 secret，逗号分隔。 |
+| `PLYSTRA_SESSION_SECRET` | 开发 placeholder | 用于 HMAC hashing opaque bearer tokens 的 secret。 |
+| `PLYSTRA_SESSION_SECRET_PREVIOUS` | 空 | session secret 轮换期间可接受的旧 secret，逗号分隔。新 token 始终使用主 secret hash。 |
+| `PLYSTRA_API_KEY_SECRET` | 开发 placeholder | 用于 HMAC hashing API key 的 secret。创建 API key 前必须设置；生产环境必须与 session secret 不同。 |
+| `PLYSTRA_API_KEY_SECRET_PREVIOUS` | 空 | API key secret 轮换期间可接受的旧 secret，逗号分隔。 |
 | `HTTP_READ_HEADER_TIMEOUT` | `5s` | HTTP server read-header timeout。 |
 | `HTTP_READ_TIMEOUT` | `30s` | HTTP server request read timeout。 |
 | `HTTP_WRITE_TIMEOUT` | `60s` | HTTP server response write timeout。 |
@@ -46,7 +45,7 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 
 生产环境不要使用 `.env.example` 中的 placeholder 值。
 
-Native auth 的新密码使用 Argon2id 存储。旧 PBKDF2 hash 仍可登录，并会在成功登录后升级。Refresh 会同时轮换 access token 和 refresh token。密码变更会撤销该 User 的现有 sessions。API key 只保存 HMAC hash，明文只在创建时返回一次，应放入 secret manager。
+Native auth 使用 Argon2id 存储和验证密码。Refresh 会同时轮换 access token 和 refresh token。密码变更会撤销该 User 的现有 sessions。API key 只保存 HMAC hash，明文只在创建时返回一次，应放入 secret manager。
 
 ## CORS 与请求元数据
 
@@ -55,7 +54,7 @@ Native auth 的新密码使用 Argon2id 存储。旧 PBKDF2 hash 仍可登录，
 | `CORS_ALLOWED_ORIGINS` | localhost 列表 | 逗号分隔的允许 origins。生产拒绝空值或 wildcard。 |
 | `REQUEST_ID_HEADER` | `X-Request-ID` | Request ID header 名称。 |
 
-HTTP authorization checks 会忽略 body 中的 `ip`、`user_agent` 和 canonical `request_id`，以服务端和 middleware 派生值为准。
+HTTP authorization checks 不接受 body 中的 `ip`、`user_agent` 和 canonical `request_id`，这些值以服务端和 middleware 派生值为准。
 
 ## Audit 与 Trace
 

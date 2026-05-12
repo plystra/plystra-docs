@@ -12,9 +12,7 @@ All successful responses use:
 ```json
 {
   "data": {},
-  "meta": {
-    "request_id": "req_..."
-  }
+  "request_id": "req_..."
 }
 ```
 
@@ -45,12 +43,14 @@ Errors use:
 
 ## Implemented Endpoint Groups
 
-- `/api/v1/system`
+- `/api/v1/health`
+- `/api/v1/ready`
+- `/api/v1/version`
 - `/api/v1/auth`
 - `/api/v1/actor`
 - `/api/v1/console/overview`
 - `/api/v1/authz`
-- `/api/v1/audit`
+- `/api/v1/audit/logs`
 - `/api/v1/spaces`
 - `/api/v1/groups`
 - `/api/v1/members`
@@ -103,5 +103,5 @@ openapi/plystra.v1.0.0.json
 openapi/plystra.v1.0.0.yaml
 ```
 
-The API is still pre-1.0 and may change before the stable release. v1.0 will freeze response envelopes, deny code semantics, and required audit trace fields.
+The API is converging on v1.0. Response envelopes use one canonical top-level `request_id`; Core does not return a legacy `meta.request_id`.
 

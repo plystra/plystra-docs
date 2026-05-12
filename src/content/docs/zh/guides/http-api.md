@@ -19,9 +19,6 @@ openapi/plystra.v1.0.0.json
 ```json
 {
   "data": {},
-  "meta": {
-    "request_id": "req_..."
-  },
   "request_id": "req_..."
 }
 ```
@@ -36,9 +33,6 @@ openapi/plystra.v1.0.0.json
     "cursor": null,
     "has_more": false
   },
-  "meta": {
-    "request_id": "req_..."
-  },
   "request_id": "req_..."
 }
 ```
@@ -51,9 +45,6 @@ openapi/plystra.v1.0.0.json
     "code": "VALIDATION_FAILED",
     "message": "Request body is invalid JSON.",
     "details": null,
-    "request_id": "req_..."
-  },
-  "meta": {
     "request_id": "req_..."
   },
   "request_id": "req_..."
@@ -81,12 +72,6 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 | `GET` | `/api/v1/health` |
 | `GET` | `/api/v1/ready` |
 | `GET` | `/api/v1/version` |
-| `GET` | `/api/v1/system/health` |
-| `GET` | `/api/v1/system/ready` |
-| `GET` | `/api/v1/system/version` |
-| `GET` | `/system/health` |
-| `GET` | `/system/ready` |
-| `GET` | `/system/version` |
 
 `/metrics` 会进入公开路由分支，让 handler 自己返回 `FEATURE_DISABLED` 或验证 metrics token。默认关闭。
 
@@ -100,7 +85,7 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 | `GET` | `/api/v1/actor/context` | 需要 access token。返回当前 actor 和 available members。 |
 | `POST` | `/api/v1/actor/switch-member` | 需要 access token。切换 active Member/UserMember binding。 |
 
-登录失败会按标准化 email 和来源 IP 做限速。新密码使用 Argon2id 存储；旧 PBKDF2 hash 仍可登录，并会在成功登录后升级。修改 User 密码会撤销该 User 的现有 sessions。
+登录失败会按标准化 email 和来源 IP 做限速。密码使用 Argon2id 存储和验证。修改 User 密码会撤销该 User 的现有 sessions。
 
 本地开发种子账号：
 
@@ -135,7 +120,9 @@ curl -X POST http://localhost:8080/api/v1/authz/check \
   }'
 ```
 
-HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务端值为准。
+HTTP authz 不接受 body 中的 `request_id`、`ip`、`user_agent`，这些 canonical 值始终由服务端派生。
+
+API key 调用必须传入嵌套 `actor`。Bearer session 调用可以省略 `actor`，Core 会使用 session active actor。
 
 ## Core 管理路由
 
@@ -146,7 +133,7 @@ HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务�
 | Admin grants | `GET /api/v1/admin/me`、`GET/POST /api/v1/admin/grants`、`GET /api/v1/admin/grants/{id}`、`POST /api/v1/admin/grants/{id}/revoke` |
 | API keys | `GET/POST /api/v1/api-keys`、`GET /api/v1/api-keys/{id}`、`POST /api/v1/api-keys/{id}/revoke` |
 | Overview | `GET /api/v1/console/overview` |
-| AuditLog | `GET /api/v1/audit-logs`、`GET /api/v1/audit-logs/{id}`，以及 legacy `/api/v1/audit/logs` aliases |
+| AuditLog | `GET /api/v1/audit/logs`、`GET /api/v1/audit/logs/{id}` |
 | Resource Registry | `GET/POST /api/v1/resource-types`，`GET /api/v1/resource-types/{key}`，`GET/POST /api/v1/resource-types/{key}/actions`，`GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
 | Users | `GET/POST /api/v1/users`，`GET/PATCH /api/v1/users/{id}`，`POST /api/v1/users/{id}/disable`，`POST /api/v1/users/{id}/restore` |
 | Spaces | `GET/POST /api/v1/spaces`，`GET/PATCH /api/v1/spaces/{id}`，`POST /api/v1/spaces/{id}/disable`，`POST /api/v1/spaces/{id}/restore` |
@@ -160,7 +147,7 @@ HTTP authz 会忽略 body 中的 `request_id`、`ip`、`user_agent`，以服务�
 
 User 响应已做脱敏，不返回 `password_hash`。
 
-创建 API key 时明文 `api_key` 只返回一次，请保存到 secret manager。Core 只存 HMAC hash。创建 key 所需权限是 `api_keys:create`；读取、撤销和管理分别使用 `api_keys:read`、`api_keys:revoke`、`api_keys:manage`。
+创建 API key 时明文 `api_key` 只返回一次，请保存到 secret manager。Core 只存 HMAC hash。创建 key 所需权限是 `api_keys:create`；读取、撤销和管理分别使用 `api_keys:read`、`api_keys:revoke`、`api_keys:manage`。调用方只能把自己在目标 scope 内已经拥有的 permission key 放进新 API key。
 
 ## Data Console preview 路由
 

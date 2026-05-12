@@ -81,12 +81,12 @@ readiness endpoint 会检查数据库连接和预期 migration/schema 状态。
 | 配置 | 生产规则 |
 |---|---|
 | `DATABASE_URL` 或 `PLYSTRA_DATABASE_URL` | 必填；不能使用默认 `plystra:plystra` 凭据。 |
-| `PLYSTRA_SESSION_SECRET`、`SESSION_SECRET`、`JWT_SECRET` 或 `PLYSTRA_JWT_SECRET` | 至少 32 字符，不能是默认 placeholder。 |
-| `PLYSTRA_API_KEY_SECRET` 或 `API_KEY_SECRET` | 至少 32 字符，不能是默认 placeholder，且必须与 session secret 不同。 |
+| `PLYSTRA_SESSION_SECRET` | 至少 32 字符，不能是默认 placeholder。 |
+| `PLYSTRA_API_KEY_SECRET` | 至少 32 字符，不能是默认 placeholder，且必须与 session secret 不同。 |
 | `CORS_ALLOWED_ORIGINS` | 必填；不能包含 `*`。 |
 | `SERVER_PUBLIC_URL` 或 `PLYSTRA_SERVER_PUBLIC_URL` | 必填；不能指向 localhost。 |
 
-`JWT_SECRET` 是兼容 alias。当前 runtime 使用 opaque bearer token，存储 HMAC token hash，不签发 JWT claims。
+当前 runtime 使用 opaque bearer token，存储 HMAC token hash，不签发 JWT claims。
 
 ## 第一个 Instance Super Admin
 

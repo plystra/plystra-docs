@@ -13,7 +13,7 @@ Plystra Core is configured through environment variables. In production, `cmd/pl
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP port. |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | Set to `production` for production guards. |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | local development URL in `.env.example` | Public URL. Required and non-localhost in production. |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev10` | Reported by the version endpoint. |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-dev11` | Reported by the version endpoint. |
 
 ## Database
 
@@ -29,11 +29,10 @@ Production rejects the default `plystra:plystra` credentials.
 
 | Variable | Default | Description |
 |---|---|---|
-| `PLYSTRA_SESSION_SECRET` / `SESSION_SECRET` | development placeholder | Preferred secret for HMAC hashing stored opaque bearer tokens. |
-| `PLYSTRA_SESSION_SECRET_PREVIOUS` / `SESSION_SECRET_PREVIOUS` | empty | Optional comma-separated previous secrets accepted during session secret rotation. New tokens are always hashed with the primary secret. |
-| `JWT_SECRET` / `PLYSTRA_JWT_SECRET` | compatibility placeholder | Compatibility alias for the session secret. Core v1.0 does not issue JWT claims. |
-| `PLYSTRA_API_KEY_SECRET` / `API_KEY_SECRET` | session secret fallback outside production | Secret for HMAC hashing stored API keys. Production mode requires a distinct strong value. |
-| `PLYSTRA_API_KEY_SECRET_PREVIOUS` / `API_KEY_SECRET_PREVIOUS` | empty | Optional comma-separated previous API key secrets accepted during API key secret rotation. |
+| `PLYSTRA_SESSION_SECRET` | development placeholder | Secret for HMAC hashing stored opaque bearer tokens. |
+| `PLYSTRA_SESSION_SECRET_PREVIOUS` | empty | Optional comma-separated previous secrets accepted during session secret rotation. New tokens are always hashed with the primary secret. |
+| `PLYSTRA_API_KEY_SECRET` | development placeholder | Secret for HMAC hashing stored API keys. Required before API keys can be created and must be distinct from the session secret in production. |
+| `PLYSTRA_API_KEY_SECRET_PREVIOUS` | empty | Optional comma-separated previous API key secrets accepted during API key secret rotation. |
 | `HTTP_READ_HEADER_TIMEOUT` | `5s` | HTTP server read-header timeout. |
 | `HTTP_READ_TIMEOUT` | `30s` | HTTP server request read timeout. |
 | `HTTP_WRITE_TIMEOUT` | `60s` | HTTP server response write timeout. |
@@ -46,7 +45,7 @@ Production rejects the default `plystra:plystra` credentials.
 
 Do not use the placeholder values from `.env.example` in production.
 
-Native auth stores new passwords with Argon2id. Legacy PBKDF2 hashes remain readable and are upgraded after a successful login. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User. API keys are stored as HMAC hashes, are shown only once at creation, and should be kept in a secret manager.
+Native auth stores and verifies passwords with Argon2id. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User. API keys are stored as HMAC hashes, are shown only once at creation, and should be kept in a secret manager.
 
 ## CORS and Request Metadata
 
@@ -55,7 +54,7 @@ Native auth stores new passwords with Argon2id. Legacy PBKDF2 hashes remain read
 | `CORS_ALLOWED_ORIGINS` | localhost list | Comma-separated allowed origins. Production rejects empty or wildcard values. |
 | `REQUEST_ID_HEADER` | `X-Request-ID` | Request ID header name. |
 
-HTTP authorization checks ignore body-provided `ip`, `user_agent`, and canonical `request_id`. The server derives those values from the request and middleware.
+HTTP authorization checks do not accept body-provided `ip`, `user_agent`, or canonical `request_id`. The server derives those values from the request and middleware.
 
 ## Audit and Trace
 

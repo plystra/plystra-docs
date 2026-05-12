@@ -17,6 +17,8 @@ The normal production flow is:
 
 Password login remains available in SDKs for admin tools and bootstrap flows, but routine backend checks should use an access token or API key.
 
+For `authz.check`, API key clients must pass the nested `actor`. Access-token clients may omit it when they want Core to use the token's active actor.
+
 ## API keys
 
 API keys are machine credentials. They are scoped at `instance`, `space`, or `group` level and carry explicit permission keys such as `authz:check`, `resources:read`, or `api_keys:create`.
@@ -209,10 +211,12 @@ from plystra import Plystra
 
 with Plystra("https://plystra.internal", api_key=os.environ["PLYSTRA_API_KEY"]) as plystra:
     decision = plystra.authz.check(
-        actor_user_id="user_alice",
-        actor_member_id="member_finance_reviewer",
-        actor_user_member_id="um_alice_finance_reviewer",
-        space_id="space_acme",
+        actor={
+            "user_id": "user_alice",
+            "space_id": "space_acme",
+            "member_id": "member_finance_reviewer",
+            "user_member_id": "um_alice_finance_reviewer",
+        },
         resource_type="invoice",
         resource_id="invoice_001",
         action="approve",
@@ -315,22 +319,22 @@ import (
 
 func main() {
 	ctx := context.Background()
-client := plystra.NewClient("http://localhost:8080")
+	client := plystra.NewClient("http://localhost:8080")
 
-if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
-	log.Fatal(err)
-}
-accessToken, refreshToken := client.Tokens()
-saveSession(accessToken, refreshToken)
+	if _, err := client.Auth.Login(ctx, "alice@example.com", "plystra-demo"); err != nil {
+		log.Fatal(err)
+	}
+	accessToken, refreshToken := client.Tokens()
+	saveSession(accessToken, refreshToken)
 
-if _, err := client.Auth.Refresh(ctx, ""); err != nil {
-	log.Fatal(err)
-}
-accessToken, refreshToken = client.Tokens()
-saveSession(accessToken, refreshToken)
+	if _, err := client.Auth.Refresh(ctx, ""); err != nil {
+		log.Fatal(err)
+	}
+	accessToken, refreshToken = client.Tokens()
+	saveSession(accessToken, refreshToken)
 
-decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
-		Actor: plystra.ActorContext{
+	decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+		Actor: &plystra.ActorContext{
 			UserID:       "user_alice",
 			SpaceID:      "space_acme",
 			MemberID:     "member_finance_reviewer",
@@ -357,6 +361,12 @@ client := plystra.NewClient(
 )
 
 decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	Actor: &plystra.ActorContext{
+		UserID:       "user_alice",
+		SpaceID:      "space_acme",
+		MemberID:     "member_finance_reviewer",
+		UserMemberID: "um_alice_finance_reviewer",
+	},
 	ResourceType: "invoice",
 	ResourceID:   "invoice_001",
 	Action:       "approve",

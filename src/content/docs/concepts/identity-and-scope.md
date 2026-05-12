@@ -22,7 +22,7 @@ User -> UserMember -> Member -> Space
 
 ## Authorization Input
 
-The API accepts the actor either as a nested object or legacy flattened fields:
+The HTTP API accepts the actor as one canonical nested object. API key calls must include it. Bearer session calls may omit it; Core then uses the session's active actor selected by login or `POST /api/v1/actor/switch-member`.
 
 ```json
 {
@@ -44,7 +44,7 @@ For HTTP requests, the server owns canonical request metadata:
 - `ip` comes from the server-derived remote IP and trusted proxy logic.
 - `user_agent` comes from the HTTP header.
 
-Body-provided `request_id`, `ip`, and `user_agent` are ignored by the HTTP authz handler.
+Body-provided `request_id`, `ip`, and `user_agent` are not part of the HTTP authz request contract.
 
 ## Scope Rules
 

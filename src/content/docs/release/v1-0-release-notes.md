@@ -62,7 +62,7 @@ Standard health endpoints
 Structured JSON request logging
 Recovery middleware
 CORS configuration
-Request ID compatibility output
+Canonical request ID output
 Bearer session protection for non-public Core APIs
 Disabled-by-default Data Console and metrics surfaces
 Docker self-hosted baseline
@@ -325,14 +325,6 @@ GET /api/v1/ready
 GET /api/v1/version
 ```
 
-Legacy compatibility paths are preserved:
-
-```text
-/system/*
-```
-
-if they existed previously.
-
 ### `/health`
 
 Reports basic service health.
@@ -406,7 +398,7 @@ Public operational endpoints are limited to health, readiness, and version route
 
 AuditLog, Resource Registry, Core CRUD, authorization, plugin/template management, and preview data APIs are not anonymously accessible.
 
-Opaque bearer session tokens are stored as HMAC hashes using `PLYSTRA_SESSION_SECRET`. Existing deployments may continue using `JWT_SECRET` as a compatibility alias.
+Opaque bearer session tokens are stored as HMAC hashes using `PLYSTRA_SESSION_SECRET`.
 
 ---
 
@@ -493,9 +485,9 @@ v1.0 includes the Finance Reviewer demo with four required cases.
 
 ---
 
-## 17. Request ID Compatibility
+## 17. Request ID
 
-v1.0 returns request ID in two places for compatibility:
+v1.0 returns request ID once, at the top level of the response envelope:
 
 ```json
 {
@@ -503,34 +495,11 @@ v1.0 returns request ID in two places for compatibility:
 }
 ```
 
-and:
-
-```json
-{
-  "meta": {
-    "request_id": "req_..."
-  }
-}
-```
-
-This supports:
-
-```text
-new clients using top-level request_id
-older clients using meta.request_id
-```
-
-Both values should match.
-
-This compatibility behavior is documented in:
-
-```text
-docs/compatibility/request-id-envelope.md
-```
+Core does not return `meta.request_id`.
 
 ---
 
-## 18. Compatibility Notes
+## 18. Notes
 
 ### Core Scope
 
@@ -569,21 +538,14 @@ Plugins must not modify Core Ent schemas or import generated Core Ent packages.
 
 Document project-specific breaking changes here before final release.
 
-Known compatibility-sensitive areas:
+Known breaking changes in the current dev line:
 
 ```text
-request envelope shape
-migration version requirements
-production Ent apply rejection
-API path standardization under /api/v1
-legacy /system/* compatibility behavior
-AuditLog immutability
-```
-
-If no breaking changes are present, explicitly state:
-
-```text
-No known breaking changes from the previous public release.
+response envelope has one top-level request_id and no meta.request_id
+operational aliases under /system/* and /api/v1/system/* are removed
+top-level AuditLog route is /api/v1/audit/logs
+HTTP authz accepts nested actor only
+password verification accepts Argon2id hashes only
 ```
 
 ---

@@ -26,10 +26,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "data": {},
-  "request_id": "req_...",
-  "meta": {
-    "request_id": "req_..."
-  }
+  "request_id": "req_..."
 }
 ```
 
@@ -58,4 +55,4 @@ Authorization: Bearer <access_token>
 - `GET|POST /api/v1/permissions`
 - `POST /api/v1/authz/check`
 - `POST /api/v1/authz/explain`
-- `GET /api/v1/audit-logs`
+- `GET /api/v1/audit/logs`

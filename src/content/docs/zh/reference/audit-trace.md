@@ -19,4 +19,4 @@ Plystra 会为授权决策写入追加式审计日志。审计记录描述谁通
 
 ## 生产规则
 
-审计日志是安全边界的一部分，`/api/v1/audit-logs` 默认需要拥有 active admin grant 的用户 Bearer session。业务系统不要依赖当前角色名称来解释历史记录，应读取审计中的 trace 快照。
+审计日志是安全边界的一部分，`/api/v1/audit/logs` 默认需要拥有 active admin grant 的用户 Bearer session。业务系统不要依赖当前角色名称来解释历史记录，应读取审计中的 trace 快照。
