@@ -49,7 +49,7 @@ Use a short-lived user access token for user-driven operations and an API key fo
 | Go | `github.com/plystra/go-plystra` | `plystra/go-plystra` | `plystra.Client` |
 | Plugin authors | `@plystra/plugin-sdk` | `plystra/plystra-plugin-sdk` | `validateManifestForCore` |
 
-All management modules require a Bearer session whose user has an active admin grant.
+All management modules require either a Bearer session whose user has an active admin grant or a scoped API key with matching permission keys.
 
 ## TypeScript and JavaScript
 
@@ -149,6 +149,18 @@ const plystra = new PlystraClient({
   accessToken: session.accessToken,
   refreshToken: session.refreshToken,
   onTokenChange: saveEncryptedSession,
+});
+```
+
+Attach an application request id to all calls made through a scoped client:
+
+```ts
+const scoped = plystra.withRequestId("req_01HY...");
+
+const decision = await scoped.authz.check({
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
 });
 ```
 
@@ -284,6 +296,18 @@ with Plystra("https://plystra.internal", client=http) as plystra:
     print(plystra.admin.me())
 ```
 
+Attach an application request id to all calls made through a scoped client:
+
+```python
+with Plystra("https://plystra.internal", access_token=session["plystra_access_token"]) as plystra:
+    scoped = plystra.with_request_id("req_01HY...")
+    decision = scoped.authz.check(
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
 Handle API errors:
 
 ```python
@@ -385,6 +409,17 @@ client := plystra.NewClient(
 me, err := client.Admin.Me(ctx)
 ```
 
+Attach an application request id to every SDK call using the Go context:
+
+```go
+ctx = plystra.WithRequestID(ctx, "req_01HY...")
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	ResourceType: "invoice",
+	ResourceID:   "invoice_001",
+	Action:       "approve",
+})
+```
+
 Handle API errors:
 
 ```go
@@ -405,6 +440,7 @@ Use these patterns consistently across languages.
 | Server API key | `new PlystraClient({ baseUrl, apiKey })` | `Plystra(base_url, api_key=key)` | `plystra.NewClient(baseURL, plystra.WithAPIKey(key))` |
 | Password login | `auth.login({ email, password })` | `auth.login(email, password)` | `Auth.Login(ctx, email, password)` |
 | Custom HTTP transport | `fetchImpl`, `timeoutMs`, `defaultHeaders` | pass `httpx.Client` or `httpx.AsyncClient` | `WithHTTPClient`, `WithHeader`, `WithUserAgent` |
+| Per-request request id | `client.withRequestId(id)` or `requestEnvelope(..., { requestId })` | `client.with_request_id(id)` or `request(..., request_id=id)` | `plystra.WithRequestID(ctx, id)` |
 
 Recommended production split:
 
@@ -467,12 +503,12 @@ The three SDKs expose the same Core modules with language-specific naming.
 | System | `system.version()`, `health()`, `ready()` | `system.version()`, `health()`, `ready()` | `System.Version`, `Health`, `Ready` |
 | Auth | `auth.login()`, `refresh()`, `logout()` | `auth.login()`, `refresh()`, `logout()` | `Auth.Login`, `Refresh`, `Logout` |
 | Actor | `actor.context()`, `switchMember()` | `actor.context()`, `switch_member()` | `Actor.Context`, `SwitchMember` |
-| Admin grants | `admin.me()`, `listGrants()`, `createGrant()`, `revokeGrant()` | `admin.me()`, `list_grants()`, `create_grant()`, `revoke_grant()` | `Admin.Me`, `ListGrants`, `CreateGrant`, `RevokeGrant` |
+| Admin grants | `admin.me()`, `listGrants()`, `getGrant()`, `createGrant()`, `revokeGrant()` | `admin.me()`, `list_grants()`, `get_grant()`, `create_grant()`, `revoke_grant()` | `Admin.Me`, `ListGrants`, `GetGrant`, `CreateGrant`, `RevokeGrant` |
 | API keys | `apiKeys.list()`, `create()`, `get()`, `revoke()` | `api_keys.list()`, `create()`, `get()`, `revoke()` | `APIKeys.List`, `Create`, `Get`, `Revoke` |
 | Authorization | `authz.check()`, `explain()` | `authz.check()`, `explain()` | `Authz.Check`, `Explain` |
 | Audit | `audit.list()`, `get()` | `audit.list()`, `get()` | `Audit.List`, `Get` |
 | Users | `users.list()`, `create()`, `get()`, `update()`, `disable()`, `restore()` | same snake_case module methods | `Users.List`, `Create`, `Get`, `Update`, `Disable`, `Restore` |
-| Spaces | `spaces.list()`, `create()`, `get()`, `update()`, `groups()`, `members()`, `resources()` | same snake_case module methods | `Spaces.List`, `Create`, `Get`, `Update`, `Groups`, `Members`, `Resources` |
+| Spaces | `spaces.list()`, `create()`, `get()`, `update()`, `disable()`, `restore()`, relation helpers | same snake_case module methods | `Spaces.List`, `Create`, `Get`, `Update`, `Disable`, `Restore`, relation helpers |
 | Groups | `groups.create()`, `get()`, `getInSpace()`, `update()`, `disable()` | `groups.create()`, `get()`, `get_in_space()`, `update()`, `disable()` | `Groups.Create`, `Get`, `GetInSpace`, `Update`, `Disable` |
 | Members | `members.create()`, `get()`, `update()`, `disable()` | same snake_case module methods | `Members.Create`, `Get`, `Update`, `Disable` |
 | UserMembers | `userMembers.create()`, `get()`, `update()`, `revoke()` | `user_members.create()`, `get()`, `update()`, `revoke()` | `UserMembers.Create`, `Get`, `Update`, `Revoke` |
@@ -483,7 +519,7 @@ The three SDKs expose the same Core modules with language-specific naming.
 | Resource registry | `resourceTypes.list()`, `upsert()`, `actions()`, `upsertAction()`, `mapping()`, `upsertMapping()` | `resource_types.*` snake_case methods | `ResourceTypes.*` |
 | Resources | `resources.list()`, `create()`, `get()`, `update()`, `archive()` | `resources.*` snake_case methods | `Resources.*` |
 | Data Console | `data.tables()`, `listRows()`, `getRow()`, `createRow()`, `updateRow()`, `deleteRow()` | `data.*` snake_case methods | `Data.*` |
-| Plugins | `plugins.list()`, `get()`, `install()`, `validateManifest()`, lifecycle and metadata helpers | `plugins.*` snake_case methods | `Plugins.*` |
+| Plugins | `plugins.list()`, `get()`, `install()`, `validateManifest()`, lifecycle, resources, permissions, audit events, admin menu, settings | `plugins.*` snake_case methods | `Plugins.*` |
 | Templates | `templates.list()`, `get()`, `previewInstall()`, `install()` | `templates.*` snake_case methods | `Templates.*` |
 
 Data Console calls require `DATA_CONSOLE_ENABLED=true` and are disabled by default in Core. Metrics are not wrapped as normal JSON SDK methods because `/metrics` returns Prometheus text.

@@ -5,7 +5,7 @@ description: A complete, copy-pasteable developer guide for integrating Plystra 
 
 This handbook is the main developer path for Plystra Core v1.0. It assumes you are adding Plystra to an application that already has business objects such as invoices, tickets, orders, documents, cases, or projects.
 
-Use this page when you need to know exactly which records to create, which credential to use, which endpoint to call, and which authorization decision to trust. The examples use the current Core API and SDK behavior in `1.0.0-dev12`.
+Use this page when you need to know exactly which records to create, which credential to use, which endpoint to call, and which authorization decision to trust. The examples use the current Core API and SDK behavior in `1.0.0-dev13`.
 
 ## What Plystra Does
 

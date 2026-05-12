@@ -49,7 +49,7 @@ await secrets.put("PLYSTRA_API_KEY", created.api_key);
 | Go | `github.com/plystra/go-plystra` | `plystra/go-plystra` | `plystra.Client` |
 | 插件作者 | `@plystra/plugin-sdk` | `plystra/plystra-plugin-sdk` | `validateManifestForCore` |
 
-所有管理模块都需要 Bearer session，并且该 session 对应的用户必须拥有有效管理员授权。
+所有管理模块都需要拥有有效管理员授权的 Bearer session，或拥有匹配 permission key 的 scoped API key。
 
 ## TypeScript 和 JavaScript
 
@@ -149,6 +149,18 @@ const plystra = new PlystraClient({
   accessToken: session.accessToken,
   refreshToken: session.refreshToken,
   onTokenChange: saveEncryptedSession,
+});
+```
+
+给一组调用附加应用侧 request id：
+
+```ts
+const scoped = plystra.withRequestId("req_01HY...");
+
+const decision = await scoped.authz.check({
+  resource_type: "invoice",
+  resource_id: "invoice_001",
+  action: "approve",
 });
 ```
 
@@ -284,6 +296,18 @@ with Plystra("https://plystra.internal", client=http) as plystra:
     print(plystra.admin.me())
 ```
 
+给一组调用附加应用侧 request id：
+
+```python
+with Plystra("https://plystra.internal", access_token=session["plystra_access_token"]) as plystra:
+    scoped = plystra.with_request_id("req_01HY...")
+    decision = scoped.authz.check(
+        resource_type="invoice",
+        resource_id="invoice_001",
+        action="approve",
+    )
+```
+
 错误处理：
 
 ```python
@@ -385,6 +409,17 @@ client := plystra.NewClient(
 me, err := client.Admin.Me(ctx)
 ```
 
+通过 Go context 给每个 SDK 调用附加应用侧 request id：
+
+```go
+ctx = plystra.WithRequestID(ctx, "req_01HY...")
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	ResourceType: "invoice",
+	ResourceID:   "invoice_001",
+	Action:       "approve",
+})
+```
+
 错误处理：
 
 ```go
@@ -405,6 +440,7 @@ if errors.As(err, &apiErr) {
 | 服务端 API key | `new PlystraClient({ baseUrl, apiKey })` | `Plystra(base_url, api_key=key)` | `plystra.NewClient(baseURL, plystra.WithAPIKey(key))` |
 | 密码登录 | `auth.login({ email, password })` | `auth.login(email, password)` | `Auth.Login(ctx, email, password)` |
 | 自定义 HTTP transport | `fetchImpl`、`timeoutMs`、`defaultHeaders` | 传入 `httpx.Client` 或 `httpx.AsyncClient` | `WithHTTPClient`、`WithHeader`、`WithUserAgent` |
+| 单次请求 request id | `client.withRequestId(id)` 或 `requestEnvelope(..., { requestId })` | `client.with_request_id(id)` 或 `request(..., request_id=id)` | `plystra.WithRequestID(ctx, id)` |
 
 推荐生产拆分：
 
@@ -467,12 +503,12 @@ await plystra.actor.switchMember({
 | System | `system.version()`、`health()`、`ready()` | `system.version()`、`health()`、`ready()` | `System.Version`、`Health`、`Ready` |
 | Auth | `auth.login()`、`refresh()`、`logout()` | `auth.login()`、`refresh()`、`logout()` | `Auth.Login`、`Refresh`、`Logout` |
 | Actor | `actor.context()`、`switchMember()` | `actor.context()`、`switch_member()` | `Actor.Context`、`SwitchMember` |
-| Admin grants | `admin.me()`、`listGrants()`、`createGrant()`、`revokeGrant()` | `admin.me()`、`list_grants()`、`create_grant()`、`revoke_grant()` | `Admin.Me`、`ListGrants`、`CreateGrant`、`RevokeGrant` |
+| Admin grants | `admin.me()`、`listGrants()`、`getGrant()`、`createGrant()`、`revokeGrant()` | `admin.me()`、`list_grants()`、`get_grant()`、`create_grant()`、`revoke_grant()` | `Admin.Me`、`ListGrants`、`GetGrant`、`CreateGrant`、`RevokeGrant` |
 | API keys | `apiKeys.list()`、`create()`、`get()`、`revoke()` | `api_keys.list()`、`create()`、`get()`、`revoke()` | `APIKeys.List`、`Create`、`Get`、`Revoke` |
 | Authorization | `authz.check()`、`explain()` | `authz.check()`、`explain()` | `Authz.Check`、`Explain` |
 | Audit | `audit.list()`、`get()` | `audit.list()`、`get()` | `Audit.List`、`Get` |
 | Users | `users.list()`、`create()`、`get()`、`update()`、`disable()`、`restore()` | 同名 snake_case 模块方法 | `Users.List`、`Create`、`Get`、`Update`、`Disable`、`Restore` |
-| Spaces | `spaces.list()`、`create()`、`get()`、`update()`、`groups()`、`members()`、`resources()` | 同名 snake_case 模块方法 | `Spaces.List`、`Create`、`Get`、`Update`、`Groups`、`Members`、`Resources` |
+| Spaces | `spaces.list()`、`create()`、`get()`、`update()`、`disable()`、`restore()`、relation helpers | 同名 snake_case 模块方法 | `Spaces.List`、`Create`、`Get`、`Update`、`Disable`、`Restore`、relation helpers |
 | Groups | `groups.create()`、`get()`、`getInSpace()`、`update()`、`disable()` | `groups.create()`、`get()`、`get_in_space()`、`update()`、`disable()` | `Groups.Create`、`Get`、`GetInSpace`、`Update`、`Disable` |
 | Members | `members.create()`、`get()`、`update()`、`disable()` | 同名 snake_case 模块方法 | `Members.Create`、`Get`、`Update`、`Disable` |
 | UserMembers | `userMembers.create()`、`get()`、`update()`、`revoke()` | `user_members.create()`、`get()`、`update()`、`revoke()` | `UserMembers.Create`、`Get`、`Update`、`Revoke` |
@@ -483,7 +519,7 @@ await plystra.actor.switchMember({
 | Resource registry | `resourceTypes.list()`、`upsert()`、`actions()`、`upsertAction()`、`mapping()`、`upsertMapping()` | `resource_types.*` snake_case 方法 | `ResourceTypes.*` |
 | Resources | `resources.list()`、`create()`、`get()`、`update()`、`archive()` | `resources.*` snake_case 方法 | `Resources.*` |
 | Data Console | `data.tables()`、`listRows()`、`getRow()`、`createRow()`、`updateRow()`、`deleteRow()` | `data.*` snake_case 方法 | `Data.*` |
-| Plugins | `plugins.list()`、`get()`、`install()`、`validateManifest()`、lifecycle 和 metadata helper | `plugins.*` snake_case 方法 | `Plugins.*` |
+| Plugins | `plugins.list()`、`get()`、`install()`、`validateManifest()`、lifecycle、resources、permissions、audit events、admin menu、settings | `plugins.*` snake_case 方法 | `Plugins.*` |
 | Templates | `templates.list()`、`get()`、`previewInstall()`、`install()` | `templates.*` snake_case 方法 | `Templates.*` |
 
 Data Console 默认在 Core 中关闭，需要 `DATA_CONSOLE_ENABLED=true`。Metrics 返回 Prometheus text，不作为普通 JSON SDK 模块封装。
