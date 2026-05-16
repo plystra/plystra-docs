@@ -1,19 +1,19 @@
 ---
-title: Plystra Core
-description: Self-hosted identity and authorization core for explainable business permissions.
+title: Plystra Kernel
+description: Self-hosted explainable authorization and audit for existing applications.
 template: splash
 hero:
-  tagline: Self-hosted identity and authorization core for applications that need account-identity separation, scoped resource permissions, and append-only audit logs.
+  tagline: Protect one action first. No user migration, no organization sync, no resource mirror required.
   actions:
-    - text: Developer Handbook
-      link: /guides/developer-handbook/
-      icon: right-arrow
     - text: Quickstart
       link: /getting-started/
       icon: rocket
+    - text: SDKs
+      link: /guides/sdks/
+      icon: right-arrow
       variant: minimal
     - text: View on GitHub
-      link: https://github.com/plystra/plystra
+      link: https://github.com/plystra/kernel
       icon: external
       variant: minimal
 ---
@@ -22,49 +22,42 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Start Here
 
-If you are adding Plystra to an existing backend, start with the Developer Handbook. It is split into focused pages for the concrete object model, API calls, credential choices, security boundaries, SDK examples, and backend guard flow:
+Phase 1 starts with Context Mode:
 
 ```text
-register resource type -> create Space and identities -> grant role -> register resource -> call authz/check
+existing backend -> Plystra Kernel authz/check -> existing backend continues
 ```
 
+Your application remains the source of truth for users, memberships, roles, and business objects.
+
 <CardGrid>
-	<Card title="Developer handbook" icon="open-book" href="/guides/developer-handbook/">
-		The complete production integration path, split into short pages for setup, identity modeling, permissions, API keys, SDKs, and boundary tests.
+	<Card title="Quickstart" icon="rocket" href="/getting-started/">
+		Start Kernel, apply migrations, and protect an invoice approval action with inline server-side context.
 	</Card>
-	<Card title="Integrate an app" icon="right-arrow" href="/guides/integrate-your-app/">
-		Create the exact Plystra records needed to protect a business endpoint, then call `/api/v1/authz/check` from your backend.
+	<Card title="HTTP API" icon="document" href="/guides/http-api/">
+		Review envelopes, API-key protection, protected routes, and Context Mode request/response shapes.
 	</Card>
-	<Card title="Run locally first" icon="rocket" href="/getting-started/">
-		Start Core, apply migrations, run the Finance demo, and verify the v1.0 release checks.
+	<Card title="SDKs" icon="right-arrow" href="/guides/sdks/">
+		Use the same Kernel Phase 1 surface from TypeScript, Python, and Go.
 	</Card>
-	<Card title="Check the API surface" icon="document" href="/guides/http-api/">
-		Review response envelopes, authentication layers, protected routes, and endpoint groups.
-	</Card>
-	<Card title="Admin auth and security" icon="lock" href="/reference/admin-auth-and-security/">
-		Understand AdminGrant levels, API key scopes, route permission mapping, and anti-escalation rules.
+	<Card title="Audit Trace" icon="open-book" href="/reference/audit-trace/">
+		Inspect allow/deny decisions through trace and audit records.
 	</Card>
 </CardGrid>
 
-## What Plystra v1.0 Covers
+## What Phase 1 Covers
 
 <CardGrid stagger>
-	<Card title="Explainable identity" icon="approve-check-circle">
-		Every authorization decision explains the `User -> UserMember -> Member -> Space` path that acted.
+	<Card title="Kernel runtime" icon="rocket">
+		The `kernel` repository is the runtime entrypoint. It loads the privileged system capabilities and exposes `/api/v1`.
 	</Card>
-	<Card title="Scoped permissions" icon="setting">
-		Permissions are evaluated against `self`, `group`, `group_tree`, and `space` scope rules. `global` is reserved and disabled in v1.0.
+	<Card title="System capabilities" icon="setting">
+		Identity, authorization, resource registry, audit, and admin control remain separate privileged capability modules.
 	</Card>
-	<Card title="Resource Registry" icon="document">
-		Resource types, actions, mappings, risk levels, and audit defaults are stored as governed metadata.
+	<Card title="Context Mode" icon="approve-check-circle">
+		A trusted backend passes actor, resource, and grants inline to protect one real action without migration.
 	</Card>
-	<Card title="Append-only audit" icon="open-book">
-		Allow and deny decisions write trace snapshots that remain readable after metadata changes.
-	</Card>
-	<Card title="Self-hosted Core" icon="rocket">
-		PostgreSQL, versioned migrations, Ent schema checks, Docker Compose, and production safety guards are part of the Core.
-	</Card>
-	<Card title="Protected API surface" icon="lock">
-		Non-public Core APIs require the Bearer user session with an active admin grant. Data Console and metrics are disabled by default.
+	<Card title="Strict boundary" icon="lock">
+		Protected routes require a scoped server API key. Inline context must never come directly from untrusted clients.
 	</Card>
 </CardGrid>

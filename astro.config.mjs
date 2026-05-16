@@ -19,7 +19,7 @@ export default defineConfig({
 				root: { label: 'English', lang: 'en' },
 				zh: { label: '简体中文', lang: 'zh-CN' },
 			},
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/plystra/plystra' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/plystra/kernel' }],
 			sidebar: [
 				{
 					label: 'Start',
@@ -67,7 +67,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Configuration', translations: { 'zh-CN': '配置项' }, slug: 'reference/configuration' },
 						{ label: 'Database and Migrations', translations: { 'zh-CN': '数据库与迁移' }, slug: 'reference/database-and-migrations' },
-						{ label: 'Core API Reference', translations: { 'zh-CN': 'Core API 参考' }, slug: 'reference/core-api' },
+						{ label: 'Kernel API Reference', translations: { 'zh-CN': 'Kernel API 参考' }, slug: 'reference/core-api' },
 						{ label: 'Admin Auth and Security', translations: { 'zh-CN': 'Admin Auth 与安全边界' }, slug: 'reference/admin-auth-and-security' },
 						{ label: 'Resource Registry', translations: { 'zh-CN': 'Resource Registry' }, slug: 'reference/resource-registry' },
 						{ label: 'Audit Trace', translations: { 'zh-CN': '审计 Trace' }, slug: 'reference/audit-trace' },
