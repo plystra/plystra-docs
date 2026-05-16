@@ -18,7 +18,6 @@ Linux 和 macOS：
 ```bash
 cd ~/src/plystra/plystra
 export DATABASE_URL="postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
-./scripts/build-capabilities.sh
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
 go run ./cmd/plystrad
@@ -29,7 +28,6 @@ Windows PowerShell：
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
 $env:DATABASE_URL = "postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
-.\scripts\build-capabilities.ps1
 go run .\cmd\plystractl migrate up
 go run .\cmd\plystractl migrate verify
 go run .\cmd\plystrad

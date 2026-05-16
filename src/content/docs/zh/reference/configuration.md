@@ -13,7 +13,7 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP 端口。 |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | 设为 `production` 启用生产 guard。 |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | `.env.example` 中的本地开发 URL | Public URL。生产必填且不能是 localhost。 |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc104` | version endpoint 返回的 Core 版本。 |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc115` | version endpoint 返回的 Core 版本。 |
 
 ## Database
 

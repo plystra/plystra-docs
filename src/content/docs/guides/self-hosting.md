@@ -1,6 +1,6 @@
 ---
 title: Self-hosting
-description: Run Plystra with PostgreSQL, trusted system capability sidecars, migrations, readiness checks, and production safety settings.
+description: Run Plystra with PostgreSQL, built-in trusted system capabilities, migrations, readiness checks, and production safety settings.
 ---
 
 Plystra v1.0 targets PostgreSQL self-hosting. The recommended production shape is:
@@ -9,10 +9,10 @@ Plystra v1.0 targets PostgreSQL self-hosting. The recommended production shape i
 reverse proxy / load balancer
     -> plystrad from plystra/plystra
         -> PostgreSQL
-        -> local trusted system capability sidecars
+        -> built-in trusted system capabilities
 ```
 
-Use the repository `Dockerfile`, `docker-compose.yml`, migrations, `scripts/build-capabilities.sh`, `scripts/build-capabilities.ps1`, and `plystractl` checks as the baseline.
+Use the repository `Dockerfile`, `docker-compose.yml`, migrations, and `plystractl` checks as the baseline.
 
 ## Compose Baseline
 
@@ -30,8 +30,6 @@ Important Compose variables:
 | `CORS_ALLOWED_ORIGINS` | localhost list | Explicit browser origins. Production mode rejects wildcard CORS. |
 | `PLYSTRA_SESSION_SECRET` | development placeholder | Secret for HMAC opaque session tokens. |
 | `PLYSTRA_API_KEY_SECRET` | development placeholder | Secret for HMAC API keys. Production requires an independent strong secret. |
-| `PLYSTRA_SYSTEM_CAPABILITIES_CONFIG` | empty | Optional explicit path to `system-capabilities.yaml`. |
-| `PLYSTRA_LOCKFILE` | empty | Optional explicit path to the capability lockfile. |
 | `HTTP_READ_HEADER_TIMEOUT` | `5s` | Slow header read protection. |
 | `HTTP_READ_TIMEOUT` | `30s` | Request read timeout. |
 | `HTTP_WRITE_TIMEOUT` | `60s` | Response write timeout. |
@@ -43,23 +41,7 @@ The local development `.env.example` uses explicit localhost CORS values.
 
 ## System Capabilities
 
-Build the official sidecar artifacts before starting a deployment that should run externalized system capabilities:
-
-Linux and macOS:
-
-```bash
-cd ~/src/plystra/plystra
-./scripts/build-capabilities.sh
-```
-
-Windows PowerShell:
-
-```powershell
-cd C:\Users\i\Documents\GitHub\plystra\plystra
-.\scripts\build-capabilities.ps1
-```
-
-The scripts build:
+The official system capabilities are compiled into the `plystrad` binary and loaded by the kernel during startup:
 
 - `audit.explainable`
 - `identity.business`
@@ -67,9 +49,7 @@ The scripts build:
 - `authorization.resource`
 - `admin.control_plane`
 
-It copies each manifest and migration bundle into `capabilities/`, builds local binaries, and removes the old lockfile. On next boot, `plystrad` creates `capabilities/plystra.lock` with pinned versions and binary checksums.
-
-System capabilities are trusted startup-time modules. Do not use this mechanism for third-party runtime installs, hot unload, marketplace replacement of authz/audit/identity, or Go ABI plugins.
+They register services, routes, migration ownership metadata, and lifecycle health through `internal/kernel/contracts`. Do not use this mechanism for third-party runtime installs, hot unload, marketplace replacement of authz/audit/identity, sidecar loading, or Go ABI plugins.
 
 ## Migration Flow
 
@@ -85,7 +65,7 @@ go run ./cmd/plystractl doctor
 
 Production upgrades must use versioned migrations. Do not use Ent auto migration as the production upgrade mechanism.
 
-Runtime database access is Ent-backed. Production schema changes are represented by versioned Atlas-style SQL files under `plystra/migrations/` and recorded in `schema_migrations`. System capability migration bundles are validated and applied by `plystrad` in dependency order and recorded in `kernel_capability_migrations`.
+Runtime database access is Ent-backed. Production schema changes are represented by versioned Atlas-style SQL files under `plystra/migrations/` and recorded in `schema_migrations`. System capability migration ownership is registered through the kernel, but release migrations are still applied through the same Atlas-style migration flow.
 
 ## Start Core
 
@@ -93,7 +73,7 @@ Runtime database access is Ent-backed. Production schema changes are represented
 go run ./cmd/plystrad
 ```
 
-Or use Compose. The Linux image builds and ships the five official sidecar binaries under `/app/capabilities`:
+Or use Compose:
 
 ```bash
 docker compose up -d plystra-core

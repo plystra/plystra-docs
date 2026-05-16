@@ -1,6 +1,6 @@
 ---
 title: 自托管部署
-description: 使用 Docker Compose、PostgreSQL、可信 system capability sidecar、migrations、readiness checks 和生产安全配置运行 Plystra Core。
+description: 使用 Docker Compose、PostgreSQL、内置可信 system capabilities、migrations、readiness checks 和生产安全配置运行 Plystra Core。
 ---
 
 Plystra v1.0 面向 PostgreSQL 自托管。推荐生产形态：
@@ -9,10 +9,10 @@ Plystra v1.0 面向 PostgreSQL 自托管。推荐生产形态：
 reverse proxy / load balancer
     -> plystra-core
         -> PostgreSQL
-        -> local trusted system capability sidecars
+        -> built-in trusted system capabilities
 ```
 
-以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations、`scripts/build-capabilities.sh`、`scripts/build-capabilities.ps1` 和 `plystractl` 检查作为 baseline。
+以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations 和 `plystractl` 检查作为 baseline。
 
 ## Compose baseline
 
@@ -30,8 +30,6 @@ docker compose up -d
 | `CORS_ALLOWED_ORIGINS` | localhost 列表 | 显式浏览器 origins。生产模式会拒绝 wildcard CORS。 |
 | `PLYSTRA_SESSION_SECRET` | 开发 placeholder | 用于 HMAC opaque session token 的 secret。 |
 | `PLYSTRA_API_KEY_SECRET` | 开发 placeholder | 用于 HMAC API key 的 secret。生产要求独立强 secret。 |
-| `PLYSTRA_SYSTEM_CAPABILITIES_CONFIG` | 空 | 可选 `system-capabilities.yaml` 显式路径。 |
-| `PLYSTRA_LOCKFILE` | 空 | 可选 capability lockfile 显式路径。 |
 | `HTTP_READ_HEADER_TIMEOUT` | `5s` | 防止慢速 header 读取。 |
 | `HTTP_READ_TIMEOUT` | `30s` | 请求读取超时。 |
 | `HTTP_WRITE_TIMEOUT` | `60s` | 响应写入超时。 |
@@ -43,23 +41,7 @@ docker compose up -d
 
 ## System Capabilities
 
-启动 externalized system capabilities 前，先构建官方 sidecar artifact：
-
-Linux 和 macOS：
-
-```bash
-cd ~/src/plystra/plystra
-./scripts/build-capabilities.sh
-```
-
-Windows PowerShell：
-
-```powershell
-cd C:\Users\i\Documents\GitHub\plystra\plystra
-.\scripts\build-capabilities.ps1
-```
-
-脚本会构建：
+官方 system capabilities 会编译进 `plystrad` binary，并由 kernel 在启动时加载：
 
 - `audit.explainable`
 - `identity.business`
@@ -67,9 +49,7 @@ cd C:\Users\i\Documents\GitHub\plystra\plystra
 - `authorization.resource`
 - `admin.control_plane`
 
-它会把每个 manifest 和 migration bundle 复制到 `capabilities/`，构建本地 binary，并清理旧 lockfile。下次启动时，`plystrad` 会创建 `capabilities/plystra.lock`，其中 pin 住版本和 binary checksum。
-
-System capabilities 是可信启动时模块。不要把这个机制用于第三方 runtime install、hot unload、marketplace 替换 authz/audit/identity，或 Go ABI plugin。
+它们通过 `internal/kernel/contracts` 注册 services、routes、migration ownership metadata 和 lifecycle health。不要把这个机制用于第三方 runtime install、hot unload、marketplace 替换 authz/audit/identity、sidecar loading 或 Go ABI plugin。
 
 ## 迁移流程
 
@@ -85,7 +65,7 @@ go run ./cmd/plystractl doctor
 
 生产升级必须使用版本化 migrations。不要把 Ent auto migration 当成生产升级机制。
 
-Runtime database access 使用 Ent。生产 schema 变更通过 `plystra/migrations/` 下的 versioned Atlas-style SQL 文件表示，并记录在 `schema_migrations`。System capability migration bundle 由 `plystrad` 按依赖顺序校验和执行，并记录在 `kernel_capability_migrations`。
+Runtime database access 使用 Ent。生产 schema 变更通过 `plystra/migrations/` 下的 versioned Atlas-style SQL 文件表示，并记录在 `schema_migrations`。System capability migration ownership 通过 kernel 注册，但 release migration 仍通过同一套 Atlas-style migration flow 执行。
 
 ## 启动 Core
 
@@ -93,7 +73,7 @@ Runtime database access 使用 Ent。生产 schema 变更通过 `plystra/migrati
 go run ./cmd/plystrad
 ```
 
-或使用 Compose。Linux 镜像会在 `/app/capabilities` 下携带五个官方 sidecar binary：
+或使用 Compose：
 
 ```bash
 docker compose up -d plystra-core
