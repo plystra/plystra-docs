@@ -142,13 +142,15 @@ API key 调用必须传入嵌套 `actor`。Bearer session 调用可以省略 `ac
 | Resource Registry | `GET/POST /api/v1/resource-types`，`GET /api/v1/resource-types/{key}`，`GET/POST /api/v1/resource-types/{key}/actions`，`GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
 | Users | `GET/POST /api/v1/users`，`GET/PATCH /api/v1/users/{id}`，`POST /api/v1/users/{id}/disable`，`POST /api/v1/users/{id}/restore` |
 | Spaces | `GET/POST /api/v1/spaces`，`GET/PATCH /api/v1/spaces/{id}`，`POST /api/v1/spaces/{id}/disable`，`POST /api/v1/spaces/{id}/restore` |
-| Space 嵌套对象 | `/api/v1/spaces/{space_id}/groups`、`/members`、`/user-members`、`/roles`、`/member-roles`、`/member-role-grants`、`/resources`、`/audit-logs` |
+| Space 嵌套对象 | `/api/v1/spaces/{space_id}/groups`、`/members`、`/user-members`、`/roles`、`/member-roles`、`/resources`、`/audit-logs` |
 | Direct details | `GET /api/v1/groups/{id}`、`GET /api/v1/members/{id}`、`GET /api/v1/user-members/{id}`、`GET /api/v1/roles/{id}` |
 | Permissions | `GET/POST /api/v1/permissions`、`GET/PATCH /api/v1/permissions/{id}`、`POST /api/v1/permissions/{id}/disable` |
 | Role permissions | `GET/POST /api/v1/role-permissions`、`GET/DELETE /api/v1/role-permissions/{id}` |
 | Resources | `GET/POST /api/v1/resources`、`GET /api/v1/resources/{resource_type}/{resource_id}` |
-| Plugins | `POST /api/v1/plugins/validate-manifest`、`POST /api/v1/plugins/install`、`GET /api/v1/plugins`、`GET /api/v1/plugins/{key}`、lifecycle 和 metadata subroutes |
-| Templates | `GET /api/v1/templates`、`GET /api/v1/templates/{id}`、`POST /api/v1/templates/{id}/preview-install`、`POST /api/v1/templates/{id}/install` |
+| Plugin metadata preview | `POST /api/v1/plugins/validate-manifest`、`POST /api/v1/plugins/install`、`GET /api/v1/plugins`、`GET /api/v1/plugins/{key}`、lifecycle 和 metadata subroutes，包括 `/admin-menus` |
+| Template metadata preview | `GET /api/v1/templates`、`GET /api/v1/templates/{id}`、`POST /api/v1/templates/{id}/preview-install`、`POST /api/v1/templates/{id}/install` |
+
+Plugin 和 template 路由在当前 Core API 中属于 preview metadata surface，不代表稳定 plugin runtime、第三方 marketplace、capability system 或 one-command template ecosystem 已经承诺。
 
 User 响应已做脱敏，不返回 `password_hash`。
 

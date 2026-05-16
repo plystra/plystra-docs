@@ -204,7 +204,7 @@ curl -s -X POST "$PLYSTRA_URL/api/v1/role-permissions" \
 把 Role 授给 Member，并锚定在 `group_finance`：
 
 ```bash
-curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_acme/member-role-grants" \
+curl -s -X POST "$PLYSTRA_URL/api/v1/spaces/space_acme/member-roles" \
   -H "Authorization: Bearer $PLYSTRA_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

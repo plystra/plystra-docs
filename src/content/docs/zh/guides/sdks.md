@@ -19,6 +19,8 @@ SDK 仍保留账号密码登录能力，适合管理工具和 bootstrap 流程�
 
 对于 `authz.check`，API key 客户端必须传入嵌套 `actor`。access token 客户端可以省略，Core 会使用 token 的 active actor。
 
+所有 SDK 都支持 Context Mode：可信服务端代码可以用 API key 传入 inline `actor`、`resource` 和 `grants`。不要从浏览器提交的 JSON 直接构造这些字段。
+
 ## API keys
 
 API key 是机器凭证，支持 `instance`、`space`、`group` 三层 scope，并携带显式 permission key，例如 `authz:check`、`resources:read`、`api_keys:create`。
@@ -474,6 +476,40 @@ await plystra.authz.check({
 });
 ```
 
+使用 API key 和 Context Mode：
+
+```ts
+await plystra.authz.check({
+  actor: {
+    user_id: "user_external_alice",
+    member_id: "member_finance_reviewer",
+    binding_id: "binding_external_alice_finance",
+    space_id: "space_acme",
+    user_email: "alice@example.com",
+  },
+  resource: {
+    type: "invoice",
+    external_id: "invoice_001",
+    space_id: "space_acme",
+    group_path: "finance.apac",
+    owner_member_id: "member_invoice_creator",
+  },
+  grants: [
+    {
+      role_key: "finance_approver",
+      resource: "invoice",
+      action: "approve",
+      scope: "group_tree",
+      space_id: "space_acme",
+      scope_anchor_group_path: "finance",
+    },
+  ],
+  action: "approve",
+});
+```
+
+Python 和 Go 使用相同 JSON 字段名。Go SDK 中对应 `AuthzResourceContext` 和 `AuthzGrantContext`。
+
 使用 access token：
 
 ```ts
@@ -518,11 +554,11 @@ await plystra.actor.switchMember({
 | Role permissions | `rolePermissions.list()`、`create()`、`get()`、`revoke()` | `role_permissions.list()`、`create()`、`get()`、`revoke()` | `RolePermissions.List`、`Create`、`Get`、`Revoke` |
 | Resource registry | `resourceTypes.list()`、`upsert()`、`actions()`、`upsertAction()`、`mapping()`、`upsertMapping()` | `resource_types.*` snake_case 方法 | `ResourceTypes.*` |
 | Resources | `resources.list()`、`create()`、`get()`、`update()`、`archive()` | `resources.*` snake_case 方法 | `Resources.*` |
-| Data Console | `data.tables()`、`listRows()`、`getRow()`、`createRow()`、`updateRow()`、`deleteRow()` | `data.*` snake_case 方法 | `Data.*` |
-| Plugins | `plugins.list()`、`get()`、`install()`、`validateManifest()`、lifecycle、resources、permissions、audit events、admin menu、settings | `plugins.*` snake_case 方法 | `Plugins.*` |
-| Templates | `templates.list()`、`get()`、`previewInstall()`、`install()` | `templates.*` snake_case 方法 | `Templates.*` |
+| Data Console preview | `data.tables()`、`listRows()`、`getRow()`、`createRow()`、`updateRow()`、`deleteRow()` | `data.*` snake_case 方法 | `Data.*` |
+| Plugin metadata preview | `plugins.list()`、`get()`、`install()`、`validateManifest()`、lifecycle、resources、permissions、audit events、admin menu、settings | `plugins.*` snake_case 方法 | `Plugins.*` |
+| Template metadata preview | `templates.list()`、`get()`、`previewInstall()`、`install()` | `templates.*` snake_case 方法 | `Templates.*` |
 
-Data Console 默认在 Core 中关闭，需要 `DATA_CONSOLE_ENABLED=true`。Metrics 返回 Prometheus text，不作为普通 JSON SDK 模块封装。
+Data Console 默认在 Core 中关闭，需要 `DATA_CONSOLE_ENABLED=true`。Plugin 和 template 模块封装 preview metadata API，不代表稳定 plugin runtime、第三方 marketplace 或 template ecosystem。Metrics 返回 Prometheus text，不作为普通 JSON SDK 模块封装。
 
 ## 错误处理契约
 

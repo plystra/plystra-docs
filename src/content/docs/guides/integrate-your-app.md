@@ -13,6 +13,83 @@ Can Alice, acting as Finance Reviewer, approve expense_report_001 in Finance APA
 
 and get an explainable `allow` or `deny` decision with an audit trace.
 
+## Start With Context Mode
+
+For a first integration, keep your existing app as the source of truth:
+
+```text
+your users table -> inline actor
+your organizations or tenants table -> inline space_id
+your memberships table -> inline member_id and binding_id
+your invoice table -> inline resource
+your role table -> inline grants
+```
+
+Context Mode does not require importing users, organizations, memberships, or resources into Plystra. Your backend sends the relevant decision context at the moment it protects a business action.
+
+This is a trust boundary. Inline actor, resource, and grant fields are accepted only from server-to-server API key calls. A browser or mobile client must call your backend first; your backend constructs the Plystra request from trusted session/database state.
+
+### Context Mode Request
+
+```bash
+curl -s -X POST "$PLYSTRA_URL/api/v1/authz/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
+  -d '{
+    "actor": {
+      "user_id": "user_external_alice",
+      "member_id": "member_finance_reviewer",
+      "binding_id": "binding_external_alice_finance",
+      "space_id": "space_acme",
+      "user_email": "alice@example.com"
+    },
+    "resource": {
+      "type": "invoice",
+      "external_id": "invoice_001",
+      "space_id": "space_acme",
+      "group_path": "finance.apac",
+      "owner_member_id": "member_invoice_creator"
+    },
+    "grants": [{
+      "role_key": "finance_approver",
+      "resource": "invoice",
+      "action": "approve",
+      "scope": "group_tree",
+      "space_id": "space_acme",
+      "scope_anchor_group_path": "finance"
+    }],
+    "action": "approve"
+  }'
+```
+
+The same shape works through all official SDKs. Use `/api/v1/authz/explain` to return the full trace.
+
+### Context Mode Response
+
+```json
+{
+  "data": {
+    "allow": true,
+    "decision": "allow",
+    "deny_code": null,
+    "reason": "at least one matching permission grant covers the target resource",
+    "trace_id": "trc_..."
+  }
+}
+```
+
+Common first denies:
+
+| Code | Meaning |
+|---|---|
+| `INLINE_CONTEXT_REQUIRES_API_KEY` | Inline context was sent with a session or browser credential. |
+| `ADMIN_PERMISSION_REQUIRED` | The API key does not have `authz:check` for the inline Space or Group. |
+| `NO_MATCHING_PERMISSION` | No inline grant matched the requested resource/action. |
+| `SCOPE_OUT_OF_BOUNDS` | A matching grant exists but the resource is outside its scope anchor. |
+| `CROSS_SPACE_VIOLATION` | Actor, resource, grant, or scope anchor Space IDs do not agree. |
+
+After Context Mode is working, the managed Core model below is available when you want Plystra to store Spaces, Groups, Members, Resource records, and Role grants directly.
+
 ## Integration Shape
 
 Map your application concepts to Plystra first:
@@ -469,12 +546,12 @@ Common deny codes:
 |---|---|
 | `USER_MEMBER_REVOKED` | The `UserMember` binding is not active. |
 | `USER_MEMBER_EXPIRED` | The binding expired. |
-| `ACTOR_SPACE_MISMATCH` | Actor and target are not in the same Space. |
+| `CROSS_SPACE_VIOLATION` | Actor, target, grant, or scope anchor is not in the same Space. |
 | `NO_MATCHING_PERMISSION` | No active role permission matches resource/action. |
 | `SCOPE_OUT_OF_BOUNDS` | A matching permission exists but its scope does not cover the target. |
 | `GLOBAL_SCOPE_DISABLED` | `global` scope is reserved and disabled in v1.0. |
-| `RESOURCE_TYPE_NOT_REGISTERED` | The resource type is missing from the Resource Registry. |
-| `RESOURCE_ACTION_NOT_REGISTERED` | The action is missing for the resource type. |
+| `INVALID_RESOURCE_TYPE` | The resource type is missing from the Resource Registry. |
+| `INVALID_RESOURCE_ACTION` | The action is missing for the resource type. |
 
 ## 9. Read the Audit Trail
 

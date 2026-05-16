@@ -9,7 +9,15 @@ Plystra Core v1.0 是一个自托管身份与授权服务。它把登录账号�
 User -> UserMember -> Member -> Space
 ```
 
-当前 Core 仓库包含 HTTP API 服务、PostgreSQL migrations、Ent schemas、授权引擎、Finance Reviewer demo、OpenAPI 文件和发布就绪检查。
+当前 Core 仓库包含 HTTP API 服务、PostgreSQL migrations、Ent schemas、授权引擎、面向现有应用的 Context Mode、Finance Reviewer demo、OpenAPI 文件和发布就绪检查。
+
+最快接入路径是：
+
+```text
+先保护一个动作 -> 看懂一个 trace -> 需要时再逐步使用托管的 Spaces、Groups、Members 和 Resources
+```
+
+第一次授权检查前，你不需要迁移用户、组织、成员关系或业务资源。
 
 ## 前置要求
 
@@ -72,6 +80,59 @@ demo 会打印四个必需 trace：
 | Alice 使用 revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` 是有效授权桥。 |
 
 如果 demo 输出正确，下一步直接看 [开发者手册](/zh/guides/developer-handbook/)。它会把同一套模型拆成启动、授权模型、可复制 API 请求、SDK 示例、凭证选择、AdminGrant 规则和生产越权测试。只需要业务 endpoint 流程时，也可以看较短的 [接入你的应用](/zh/guides/integrate-your-app/)。
+
+## 无迁移保护一个动作
+
+Context Mode 允许你的后端把可信的 actor、resource 和可选 grants 直接传给 Plystra。你的现有应用仍然是 users、memberships、roles 和 invoices 的事实来源。
+
+这个模式只能在服务端用带 `authz:check` 权限的 scoped API key 调用。不要从浏览器或移动端请求体直接接收这些字段。
+
+```bash
+curl -s -X POST http://localhost:8080/api/v1/authz/check \
+  -H "Content-Type: application/json" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
+  -d '{
+    "actor": {
+      "user_id": "user_external_alice",
+      "member_id": "member_finance_reviewer",
+      "binding_id": "binding_external_alice_finance",
+      "space_id": "space_acme",
+      "user_email": "alice@example.com"
+    },
+    "resource": {
+      "type": "invoice",
+      "external_id": "invoice_001",
+      "space_id": "space_acme",
+      "group_path": "finance.apac",
+      "owner_member_id": "member_invoice_creator"
+    },
+    "grants": [{
+      "role_key": "finance_approver",
+      "resource": "invoice",
+      "action": "approve",
+      "scope": "group_tree",
+      "space_id": "space_acme",
+      "scope_anchor_group_path": "finance"
+    }],
+    "action": "approve"
+  }'
+```
+
+返回结构：
+
+```json
+{
+  "data": {
+    "allow": true,
+    "decision": "allow",
+    "deny_code": null,
+    "reason": "at least one matching permission grant covers the target resource",
+    "trace_id": "trc_..."
+  }
+}
+```
+
+需要完整 trace 时，把同样的 body 发到 `/api/v1/authz/explain`。它会返回 actor 状态、目标资源、匹配 permission candidates、scope checks、最终决策和 audit metadata。
 
 ## 启动 API
 

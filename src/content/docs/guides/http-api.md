@@ -142,13 +142,15 @@ For the full route permission matrix and anti-escalation rules, see [Admin Auth 
 | Resource Registry | `GET/POST /api/v1/resource-types`, `GET /api/v1/resource-types/{key}`, `GET/POST /api/v1/resource-types/{key}/actions`, `GET/POST/PATCH/PUT /api/v1/resource-types/{key}/mapping` |
 | Users | `GET/POST /api/v1/users`, `GET/PATCH /api/v1/users/{id}`, `POST /api/v1/users/{id}/disable`, `POST /api/v1/users/{id}/restore` |
 | Spaces | `GET/POST /api/v1/spaces`, `GET/PATCH /api/v1/spaces/{id}`, `POST /api/v1/spaces/{id}/disable`, `POST /api/v1/spaces/{id}/restore` |
-| Nested Space objects | `/api/v1/spaces/{space_id}/groups`, `/members`, `/user-members`, `/roles`, `/member-roles`, `/member-role-grants`, `/resources`, `/audit-logs` |
+| Nested Space objects | `/api/v1/spaces/{space_id}/groups`, `/members`, `/user-members`, `/roles`, `/member-roles`, `/resources`, `/audit-logs` |
 | Direct details | `GET /api/v1/groups/{id}`, `GET /api/v1/members/{id}`, `GET /api/v1/user-members/{id}`, `GET /api/v1/roles/{id}` |
 | Permissions | `GET/POST /api/v1/permissions`, `GET/PATCH /api/v1/permissions/{id}`, `POST /api/v1/permissions/{id}/disable` |
 | Role permissions | `GET/POST /api/v1/role-permissions`, `GET/DELETE /api/v1/role-permissions/{id}` |
 | Resources | `GET/POST /api/v1/resources`, `GET /api/v1/resources/{resource_type}/{resource_id}` |
-| Plugins | `POST /api/v1/plugins/validate-manifest`, `POST /api/v1/plugins/install`, `GET /api/v1/plugins`, `GET /api/v1/plugins/{key}`, lifecycle and metadata subroutes |
-| Templates | `GET /api/v1/templates`, `GET /api/v1/templates/{id}`, `POST /api/v1/templates/{id}/preview-install`, `POST /api/v1/templates/{id}/install` |
+| Plugin metadata preview | `POST /api/v1/plugins/validate-manifest`, `POST /api/v1/plugins/install`, `GET /api/v1/plugins`, `GET /api/v1/plugins/{key}`, lifecycle and metadata subroutes including `/admin-menus` |
+| Template metadata preview | `GET /api/v1/templates`, `GET /api/v1/templates/{id}`, `POST /api/v1/templates/{id}/preview-install`, `POST /api/v1/templates/{id}/install` |
+
+Plugin and template routes are preview metadata surfaces in the current Core API. They do not imply a stable plugin runtime, third-party marketplace, capability system, or one-command template ecosystem.
 
 User responses are sanitized and do not return `password_hash`.
 

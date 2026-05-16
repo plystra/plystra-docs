@@ -13,6 +13,65 @@ Alice 通过 Finance Reviewer 这个业务身份，能不能审批 Finance APAC 
 
 Plystra 会返回带审计 trace 的 `allow` 或 `deny` 决策。
 
+## 先用 Context Mode
+
+第一次接入时，让你的现有应用继续做事实来源：
+
+```text
+你的 users 表 -> inline actor
+你的 org/tenant 表 -> inline space_id
+你的 memberships 表 -> inline member_id 和 binding_id
+你的 invoice 表 -> inline resource
+你的 role 表 -> inline grants
+```
+
+Context Mode 不要求先把 users、organizations、memberships 或 resources 导入 Plystra。你的后端在保护业务动作的瞬间，把本次决策需要的上下文传给 Plystra。
+
+这是安全边界。Inline actor、resource 和 grants 只能通过服务端 API key 调用。浏览器或移动端必须先请求你的后端，由你的后端从可信 session/database 状态构造 Plystra 请求。
+
+```bash
+curl -s -X POST "$PLYSTRA_URL/api/v1/authz/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
+  -d '{
+    "actor": {
+      "user_id": "user_external_alice",
+      "member_id": "member_finance_reviewer",
+      "binding_id": "binding_external_alice_finance",
+      "space_id": "space_acme",
+      "user_email": "alice@example.com"
+    },
+    "resource": {
+      "type": "invoice",
+      "external_id": "invoice_001",
+      "space_id": "space_acme",
+      "group_path": "finance.apac",
+      "owner_member_id": "member_invoice_creator"
+    },
+    "grants": [{
+      "role_key": "finance_approver",
+      "resource": "invoice",
+      "action": "approve",
+      "scope": "group_tree",
+      "space_id": "space_acme",
+      "scope_anchor_group_path": "finance"
+    }],
+    "action": "approve"
+  }'
+```
+
+常见第一批 deny：
+
+| Code | 含义 |
+|---|---|
+| `INLINE_CONTEXT_REQUIRES_API_KEY` | Inline context 使用了 session 或浏览器凭证。 |
+| `ADMIN_PERMISSION_REQUIRED` | API key 没有 inline Space/Group 上的 `authz:check`。 |
+| `NO_MATCHING_PERMISSION` | 没有 inline grant 匹配 resource/action。 |
+| `SCOPE_OUT_OF_BOUNDS` | grant 存在，但目标资源不在 scope anchor 内。 |
+| `CROSS_SPACE_VIOLATION` | Actor、resource、grant 或 scope anchor 的 Space 不一致。 |
+
+Context Mode 跑通后，如果你希望 Plystra 直接保存 Spaces、Groups、Members、Resource records 和 Role grants，可以继续使用下面的托管 Core 模型。
+
 ## 接入映射
 
 先把你的业务概念映射到 Plystra：
@@ -469,12 +528,12 @@ type AuthzEnvelope struct {
 |---|---|
 | `USER_MEMBER_REVOKED` | `UserMember` 绑定不是 active。 |
 | `USER_MEMBER_EXPIRED` | 绑定已过期。 |
-| `ACTOR_SPACE_MISMATCH` | actor 和目标资源不在同一个 Space。 |
+| `CROSS_SPACE_VIOLATION` | actor、目标资源、grant 或 scope anchor 不在同一个 Space。 |
 | `NO_MATCHING_PERMISSION` | 没有 active role permission 命中 resource/action。 |
 | `SCOPE_OUT_OF_BOUNDS` | 有匹配权限，但 scope 覆盖不到目标。 |
 | `GLOBAL_SCOPE_DISABLED` | `global` scope 在 v1.0 中保留但禁用。 |
-| `RESOURCE_TYPE_NOT_REGISTERED` | Resource Registry 中没有该资源类型。 |
-| `RESOURCE_ACTION_NOT_REGISTERED` | Resource Registry 中没有该动作。 |
+| `INVALID_RESOURCE_TYPE` | Resource Registry 中没有该资源类型。 |
+| `INVALID_RESOURCE_ACTION` | Resource Registry 中没有该动作。 |
 
 ## 9. 查看审计记录
 

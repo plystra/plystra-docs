@@ -19,6 +19,8 @@ Password login remains available in SDKs for admin tools and bootstrap flows, bu
 
 For `authz.check`, API key clients must pass the nested `actor`. Access-token clients may omit it when they want Core to use the token's active actor.
 
+Context Mode is also available through every SDK: send inline `actor`, `resource`, and `grants` from trusted server code with an API key. Do not build those fields from browser-submitted JSON.
+
 ## API keys
 
 API keys are machine credentials. They are scoped at `instance`, `space`, or `group` level and carry explicit permission keys such as `authz:check`, `resources:read`, or `api_keys:create`.
@@ -474,6 +476,67 @@ await plystra.authz.check({
 });
 ```
 
+With API key and Context Mode:
+
+```ts
+await plystra.authz.check({
+  actor: {
+    user_id: "user_external_alice",
+    member_id: "member_finance_reviewer",
+    binding_id: "binding_external_alice_finance",
+    space_id: "space_acme",
+    user_email: "alice@example.com",
+  },
+  resource: {
+    type: "invoice",
+    external_id: "invoice_001",
+    space_id: "space_acme",
+    group_path: "finance.apac",
+    owner_member_id: "member_invoice_creator",
+  },
+  grants: [
+    {
+      role_key: "finance_approver",
+      resource: "invoice",
+      action: "approve",
+      scope: "group_tree",
+      space_id: "space_acme",
+      scope_anchor_group_path: "finance",
+    },
+  ],
+  action: "approve",
+});
+```
+
+Python and Go use the same JSON field names. In Go, use `AuthzResourceContext` and `AuthzGrantContext`:
+
+```go
+decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
+	Actor: &plystra.ActorContext{
+		UserID:    "user_external_alice",
+		MemberID:  "member_finance_reviewer",
+		BindingID: "binding_external_alice_finance",
+		SpaceID:   "space_acme",
+	},
+	Resource: &plystra.AuthzResourceContext{
+		Type:          "invoice",
+		ExternalID:    "invoice_001",
+		SpaceID:       "space_acme",
+		GroupPath:     "finance.apac",
+		OwnerMemberID: "member_invoice_creator",
+	},
+	Grants: []plystra.AuthzGrantContext{{
+		RoleKey:              "finance_approver",
+		Resource:             "invoice",
+		Action:               "approve",
+		Scope:                "group_tree",
+		SpaceID:              "space_acme",
+		ScopeAnchorGroupPath: "finance",
+	}},
+	Action: "approve",
+})
+```
+
 With access token:
 
 ```ts
@@ -518,11 +581,11 @@ The three SDKs expose the same Core modules with language-specific naming.
 | Role permissions | `rolePermissions.list()`, `create()`, `get()`, `revoke()` | `role_permissions.list()`, `create()`, `get()`, `revoke()` | `RolePermissions.List`, `Create`, `Get`, `Revoke` |
 | Resource registry | `resourceTypes.list()`, `upsert()`, `actions()`, `upsertAction()`, `mapping()`, `upsertMapping()` | `resource_types.*` snake_case methods | `ResourceTypes.*` |
 | Resources | `resources.list()`, `create()`, `get()`, `update()`, `archive()` | `resources.*` snake_case methods | `Resources.*` |
-| Data Console | `data.tables()`, `listRows()`, `getRow()`, `createRow()`, `updateRow()`, `deleteRow()` | `data.*` snake_case methods | `Data.*` |
-| Plugins | `plugins.list()`, `get()`, `install()`, `validateManifest()`, lifecycle, resources, permissions, audit events, admin menu, settings | `plugins.*` snake_case methods | `Plugins.*` |
-| Templates | `templates.list()`, `get()`, `previewInstall()`, `install()` | `templates.*` snake_case methods | `Templates.*` |
+| Data Console preview | `data.tables()`, `listRows()`, `getRow()`, `createRow()`, `updateRow()`, `deleteRow()` | `data.*` snake_case methods | `Data.*` |
+| Plugin metadata preview | `plugins.list()`, `get()`, `install()`, `validateManifest()`, lifecycle, resources, permissions, audit events, admin menu, settings | `plugins.*` snake_case methods | `Plugins.*` |
+| Template metadata preview | `templates.list()`, `get()`, `previewInstall()`, `install()` | `templates.*` snake_case methods | `Templates.*` |
 
-Data Console calls require `DATA_CONSOLE_ENABLED=true` and are disabled by default in Core. Metrics are not wrapped as normal JSON SDK methods because `/metrics` returns Prometheus text.
+Data Console calls require `DATA_CONSOLE_ENABLED=true` and are disabled by default in Core. Plugin and template modules wrap preview metadata APIs; they do not imply a stable plugin runtime, third-party marketplace, or template ecosystem. Metrics are not wrapped as normal JSON SDK methods because `/metrics` returns Prometheus text.
 
 ## Error Handling Contract
 

@@ -9,7 +9,15 @@ Plystra Core v1.0 is a self-hosted identity and authorization service. It separa
 User -> UserMember -> Member -> Space
 ```
 
-The current Core repository includes the HTTP API server, PostgreSQL migrations, Ent schemas, the authorization engine, the Finance Reviewer demo, OpenAPI artifacts, and release readiness checks.
+The current Core repository includes the HTTP API server, PostgreSQL migrations, Ent schemas, the authorization engine, Context Mode for existing applications, the Finance Reviewer demo, OpenAPI artifacts, and release readiness checks.
+
+The fastest adoption path is:
+
+```text
+Protect one action -> read one trace -> grow into managed Spaces, Groups, Members, and Resources when useful
+```
+
+You do not need to migrate users, organizations, memberships, or business resources before your first authorization check.
 
 ## Prerequisites
 
@@ -72,6 +80,59 @@ The demo prints four required traces:
 | Alice uses a revoked binding | `deny: USER_MEMBER_REVOKED` | `UserMember` is the active authorization bridge. |
 
 If this demo output looks correct, the fastest next step is the [Developer Handbook](/guides/developer-handbook/). It splits this same model into setup, authorization, copy-paste API calls, SDK examples, credential choices, admin grant rules, and production boundary tests. The shorter [Integrate Your App](/guides/integrate-your-app/) guide is also available when you only need the business endpoint flow.
+
+## Protect One Action Without Migration
+
+Context Mode lets your backend pass trusted actor, resource, and optional grant context inline. Your existing app remains the source of truth for users, memberships, roles, and invoices.
+
+Use this only from server-side code with a scoped API key that has `authz:check`. Do not accept these fields directly from browser or mobile request bodies.
+
+```bash
+curl -s -X POST http://localhost:8080/api/v1/authz/check \
+  -H "Content-Type: application/json" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
+  -d '{
+    "actor": {
+      "user_id": "user_external_alice",
+      "member_id": "member_finance_reviewer",
+      "binding_id": "binding_external_alice_finance",
+      "space_id": "space_acme",
+      "user_email": "alice@example.com"
+    },
+    "resource": {
+      "type": "invoice",
+      "external_id": "invoice_001",
+      "space_id": "space_acme",
+      "group_path": "finance.apac",
+      "owner_member_id": "member_invoice_creator"
+    },
+    "grants": [{
+      "role_key": "finance_approver",
+      "resource": "invoice",
+      "action": "approve",
+      "scope": "group_tree",
+      "space_id": "space_acme",
+      "scope_anchor_group_path": "finance"
+    }],
+    "action": "approve"
+  }'
+```
+
+Expected response shape:
+
+```json
+{
+  "data": {
+    "allow": true,
+    "decision": "allow",
+    "deny_code": null,
+    "reason": "at least one matching permission grant covers the target resource",
+    "trace_id": "trc_..."
+  }
+}
+```
+
+Send the same body to `/api/v1/authz/explain` when you want the full trace with actor state, target resource, matched permission candidates, scope checks, final decision, and audit metadata.
 
 ## Start the API
 
