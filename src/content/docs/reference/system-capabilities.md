@@ -67,12 +67,21 @@ Required capabilities failing to start keep the runtime unready.
 
 Build official sidecars from the main runtime repository:
 
+Linux and macOS:
+
+```bash
+cd ~/src/plystra/plystra
+./scripts/build-capabilities.sh
+```
+
+Windows PowerShell:
+
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
 .\scripts\build-capabilities.ps1
 ```
 
-The script copies manifests and migrations into `plystra/capabilities/`, builds local binaries from the five `system-*` repositories, and removes the existing lockfile so the next boot pins fresh checksums.
+The scripts copy manifests and migrations into `plystra/capabilities/`, build local binaries from the five `system-*` repositories, and remove the existing lockfile so the next boot pins fresh checksums.
 
 ## Configuration
 
@@ -107,7 +116,7 @@ system_capabilities:
     required: true
 ```
 
-On Windows, the runtime also resolves `.exe` binaries automatically.
+On Linux and macOS, binaries are resolved without an extension. On Windows, the runtime also resolves `.exe` binaries automatically.
 
 Use `PLYSTRA_SYSTEM_CAPABILITIES_CONFIG` for an explicit config path and `PLYSTRA_LOCKFILE` for an explicit lockfile path.
 

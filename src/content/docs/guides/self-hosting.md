@@ -12,7 +12,7 @@ reverse proxy / load balancer
         -> local trusted system capability sidecars
 ```
 
-Use the repository `Dockerfile`, `docker-compose.yml`, migrations, `scripts/build-capabilities.ps1`, and `plystractl` checks as the baseline.
+Use the repository `Dockerfile`, `docker-compose.yml`, migrations, `scripts/build-capabilities.sh`, `scripts/build-capabilities.ps1`, and `plystractl` checks as the baseline.
 
 ## Compose Baseline
 
@@ -45,12 +45,21 @@ The local development `.env.example` uses explicit localhost CORS values.
 
 Build the official sidecar artifacts before starting a deployment that should run externalized system capabilities:
 
+Linux and macOS:
+
+```bash
+cd ~/src/plystra/plystra
+./scripts/build-capabilities.sh
+```
+
+Windows PowerShell:
+
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
 .\scripts\build-capabilities.ps1
 ```
 
-The script builds:
+The scripts build:
 
 - `audit.explainable`
 - `identity.business`
@@ -84,7 +93,7 @@ Runtime database access is Ent-backed. Production schema changes are represented
 go run ./cmd/plystrad
 ```
 
-Or use Compose:
+Or use Compose. The Linux image builds and ships the five official sidecar binaries under `/app/capabilities`:
 
 ```bash
 docker compose up -d plystra-core

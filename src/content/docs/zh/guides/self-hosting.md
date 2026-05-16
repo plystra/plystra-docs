@@ -12,7 +12,7 @@ reverse proxy / load balancer
         -> local trusted system capability sidecars
 ```
 
-以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations、`scripts/build-capabilities.ps1` 和 `plystractl` 检查作为 baseline。
+以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations、`scripts/build-capabilities.sh`、`scripts/build-capabilities.ps1` 和 `plystractl` 检查作为 baseline。
 
 ## Compose baseline
 
@@ -44,6 +44,15 @@ docker compose up -d
 ## System Capabilities
 
 启动 externalized system capabilities 前，先构建官方 sidecar artifact：
+
+Linux 和 macOS：
+
+```bash
+cd ~/src/plystra/plystra
+./scripts/build-capabilities.sh
+```
+
+Windows PowerShell：
 
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
@@ -84,7 +93,7 @@ Runtime database access 使用 Ent。生产 schema 变更通过 `plystra/migrati
 go run ./cmd/plystrad
 ```
 
-或使用 Compose：
+或使用 Compose。Linux 镜像会在 `/app/capabilities` 下携带五个官方 sidecar binary：
 
 ```bash
 docker compose up -d plystra-core

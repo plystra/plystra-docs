@@ -67,6 +67,15 @@ Required capability 启动失败时，运行时必须保持 unready。
 
 在主运行时仓库中构建官方 sidecar：
 
+Linux 和 macOS：
+
+```bash
+cd ~/src/plystra/plystra
+./scripts/build-capabilities.sh
+```
+
+Windows PowerShell：
+
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
 .\scripts\build-capabilities.ps1
@@ -107,7 +116,7 @@ system_capabilities:
     required: true
 ```
 
-Windows 下运行时也会自动解析 `.exe` binary。
+Linux 和 macOS 会解析无扩展名 binary。Windows 下运行时也会自动解析 `.exe` binary。
 
 可以用 `PLYSTRA_SYSTEM_CAPABILITIES_CONFIG` 指定配置路径，用 `PLYSTRA_LOCKFILE` 指定 lockfile 路径。
 

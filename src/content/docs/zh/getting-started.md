@@ -13,6 +13,19 @@ Plystra Phase 1 从 `plystra/plystra` runtime 开始。第一次授权检查前�
 
 ## 启动 Plystra
 
+Linux 和 macOS：
+
+```bash
+cd ~/src/plystra/plystra
+export DATABASE_URL="postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
+./scripts/build-capabilities.sh
+go run ./cmd/plystractl migrate up
+go run ./cmd/plystractl migrate verify
+go run ./cmd/plystrad
+```
+
+Windows PowerShell：
+
 ```powershell
 cd C:\Users\i\Documents\GitHub\plystra\plystra
 $env:DATABASE_URL = "postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
