@@ -1,5 +1,5 @@
 ---
-title: Plystra Kernel
+title: Plystra Core
 description: Self-hosted explainable authorization and audit for existing applications.
 template: splash
 hero:
@@ -13,7 +13,7 @@ hero:
       icon: right-arrow
       variant: minimal
     - text: View on GitHub
-      link: https://github.com/plystra/kernel
+      link: https://github.com/plystra/plystra
       icon: external
       variant: minimal
 ---
@@ -25,20 +25,20 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 Phase 1 starts with Context Mode:
 
 ```text
-existing backend -> Plystra Kernel authz/check -> existing backend continues
+existing backend -> Plystra authz/check -> existing backend continues
 ```
 
 Your application remains the source of truth for users, memberships, roles, and business objects.
 
 <CardGrid>
 	<Card title="Quickstart" icon="rocket" href="/getting-started/">
-		Start Kernel, apply migrations, and protect an invoice approval action with inline server-side context.
+		Start Plystra, apply migrations, build trusted system capabilities, and protect an invoice approval action with inline server-side context.
 	</Card>
 	<Card title="HTTP API" icon="document" href="/guides/http-api/">
 		Review envelopes, API-key protection, protected routes, and Context Mode request/response shapes.
 	</Card>
 	<Card title="SDKs" icon="right-arrow" href="/guides/sdks/">
-		Use the same Kernel Phase 1 surface from TypeScript, Python, and Go.
+		Use the same Phase 1 API surface from TypeScript, Python, and Go.
 	</Card>
 	<Card title="Audit Trace" icon="open-book" href="/reference/audit-trace/">
 		Inspect allow/deny decisions through trace and audit records.
@@ -48,8 +48,8 @@ Your application remains the source of truth for users, memberships, roles, and 
 ## What Phase 1 Covers
 
 <CardGrid stagger>
-	<Card title="Kernel runtime" icon="rocket">
-		The `kernel` repository is the runtime entrypoint. It loads the privileged system capabilities and exposes `/api/v1`.
+	<Card title="Core runtime" icon="rocket">
+		The `plystra/plystra` repository is the runtime entrypoint. It loads privileged system capabilities at startup and exposes `/api/v1`.
 	</Card>
 	<Card title="System capabilities" icon="setting">
 		Identity, authorization, resource registry, audit, and admin control remain separate privileged capability modules.

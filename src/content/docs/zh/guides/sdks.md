@@ -1,6 +1,6 @@
 ---
 title: SDK
-description: 使用 TypeScript、Python 和 Go 接入 Plystra Kernel Phase 1 API。
+description: 使用 TypeScript、Python 和 Go 接入 Plystra Phase 1 API。
 ---
 
 Plystra SDK 封装 Kernel Phase 1 HTTP envelope 和 Context Mode 授权流程。

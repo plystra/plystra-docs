@@ -1,6 +1,6 @@
 ---
 title: SDKs
-description: Use the Plystra Kernel Phase 1 API from TypeScript, Python, and Go.
+description: Use the Plystra Phase 1 API from TypeScript, Python, and Go.
 ---
 
 Plystra SDKs wrap the Kernel Phase 1 HTTP envelope and Context Mode authorization flow.

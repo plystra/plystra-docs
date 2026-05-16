@@ -1,6 +1,6 @@
 ---
 title: Kernel API Reference
-description: Plystra Kernel Phase 1 API response envelope, authentication, and endpoint list.
+description: Plystra Phase 1 API response envelope, authentication, and endpoint list.
 ---
 
 # Kernel API

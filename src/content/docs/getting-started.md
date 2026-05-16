@@ -1,28 +1,28 @@
 ---
 title: Getting Started
-description: Run the Plystra Kernel locally and protect one action with Context Mode.
+description: Run Plystra locally and protect one action with Context Mode.
 ---
 
-Plystra Phase 1 starts with the Kernel runtime. You do not need to migrate users, organizations, roles, or resources into Plystra before your first authorization check.
+Plystra Phase 1 starts with the `plystra/plystra` runtime. You do not need to migrate users, organizations, roles, or resources into Plystra before your first authorization check.
 
 ## Prerequisites
 
 - Go
 - PostgreSQL
-- A server-side API key value for local development
+- A server-side API key created through the protected Core API
 
-## Start Kernel
+## Start Plystra
 
 ```powershell
-cd kernel
+cd C:\Users\i\Documents\GitHub\plystra\plystra
 $env:DATABASE_URL = "postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
-$env:PLYSTRA_API_KEY = "ply_kernel_secret"
-go run .\cmd\plystrad migrate
-go run .\cmd\plystrad migrate status
-go run .\cmd\plystrad serve
+.\scripts\build-capabilities.ps1
+go run .\cmd\plystractl migrate up
+go run .\cmd\plystractl migrate verify
+go run .\cmd\plystrad
 ```
 
-The Kernel exposes public health, readiness, and version routes:
+Plystra exposes public health, readiness, and version routes:
 
 ```bash
 curl -s http://localhost:8080/api/v1/health
@@ -30,7 +30,7 @@ curl -s http://localhost:8080/api/v1/ready
 curl -s http://localhost:8080/api/v1/version
 ```
 
-Protected routes require `X-Plystra-API-Key`.
+Protected server-to-server routes require `X-Plystra-API-Key`. User/admin routes use the login session flow.
 
 ## Protect One Action
 
@@ -39,7 +39,7 @@ Context Mode lets your existing backend pass trusted actor, resource, and grant 
 ```bash
 curl -s -X POST http://localhost:8080/api/v1/authz/check \
   -H "Content-Type: application/json" \
-  -H "X-Plystra-API-Key: ply_kernel_secret" \
+  -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" \
   -d '{
     "actor": {
       "user_id": "user_external_alice",
@@ -76,7 +76,7 @@ Inline context is trusted server-side input. Build it from your authenticated se
 ## Inspect
 
 ```bash
-curl -s -H "X-Plystra-API-Key: ply_kernel_secret" http://localhost:8080/api/v1/capabilities
-curl -s -H "X-Plystra-API-Key: ply_kernel_secret" http://localhost:8080/api/v1/resource-types
-curl -s -H "X-Plystra-API-Key: ply_kernel_secret" http://localhost:8080/api/v1/audit/logs
+curl -s -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" http://localhost:8080/api/v1/capabilities
+curl -s -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" http://localhost:8080/api/v1/resource-types
+curl -s -H "X-Plystra-API-Key: $PLYSTRA_API_KEY" http://localhost:8080/api/v1/audit/logs
 ```

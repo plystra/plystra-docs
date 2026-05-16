@@ -19,7 +19,7 @@ export default defineConfig({
 				root: { label: 'English', lang: 'en' },
 				zh: { label: '简体中文', lang: 'zh-CN' },
 			},
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/plystra/kernel' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/plystra/plystra' }],
 			sidebar: [
 				{
 					label: 'Start',
@@ -69,6 +69,7 @@ export default defineConfig({
 						{ label: 'Database and Migrations', translations: { 'zh-CN': '数据库与迁移' }, slug: 'reference/database-and-migrations' },
 						{ label: 'Kernel API Reference', translations: { 'zh-CN': 'Kernel API 参考' }, slug: 'reference/core-api' },
 						{ label: 'Admin Auth and Security', translations: { 'zh-CN': 'Admin Auth 与安全边界' }, slug: 'reference/admin-auth-and-security' },
+						{ label: 'System Capabilities', translations: { 'zh-CN': 'System Capabilities' }, slug: 'reference/system-capabilities' },
 						{ label: 'Resource Registry', translations: { 'zh-CN': 'Resource Registry' }, slug: 'reference/resource-registry' },
 						{ label: 'Audit Trace', translations: { 'zh-CN': '审计 Trace' }, slug: 'reference/audit-trace' },
 						{ label: 'Ent Database Management', translations: { 'zh-CN': 'Ent 数据库管理' }, slug: 'reference/ent-database-management' },

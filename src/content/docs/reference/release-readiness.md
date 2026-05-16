@@ -78,4 +78,4 @@ HTTP smoke tests should cover:
 
 ## RC Recommendation
 
-After the security gates above pass, the release is suitable for `v1.0.0-rc6` validation. Stable release should additionally repeat clean-clone, empty-database migration, upgrade, and documentation checks.
+After the security gates above pass, the release is suitable for `v1.0.0-rc104` validation. Stable release should additionally repeat clean-clone, empty-database migration, upgrade, and documentation checks.

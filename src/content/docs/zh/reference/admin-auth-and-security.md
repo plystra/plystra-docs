@@ -3,7 +3,7 @@ title: Admin Auth 与安全边界
 description: Plystra Core 管理 API、用户 session、AdminGrant、scoped API key 和防提权规则的精确说明。
 ---
 
-本文说明 `1.0.0-rc6` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
+本文说明 `1.0.0-rc104` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
 
 ## 核心规则
 

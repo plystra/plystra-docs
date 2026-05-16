@@ -3,7 +3,7 @@ title: HTTP API
 description: Kernel Phase 1 HTTP API behavior, authentication, response envelopes, and Context Mode routes.
 ---
 
-The Plystra Kernel exposes a small `/api/v1` HTTP API for Phase 1.
+Plystra exposes a small `/api/v1` HTTP API for Phase 1.
 
 ## Response Envelope
 

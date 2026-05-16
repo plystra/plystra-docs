@@ -1,6 +1,6 @@
 ---
 title: 自托管部署
-description: 使用 Docker Compose、PostgreSQL、migrations、readiness checks 和生产安全配置运行 Plystra Core。
+description: 使用 Docker Compose、PostgreSQL、可信 system capability sidecar、migrations、readiness checks 和生产安全配置运行 Plystra Core。
 ---
 
 Plystra v1.0 面向 PostgreSQL 自托管。推荐生产形态：
@@ -9,9 +9,10 @@ Plystra v1.0 面向 PostgreSQL 自托管。推荐生产形态：
 reverse proxy / load balancer
     -> plystra-core
         -> PostgreSQL
+        -> local trusted system capability sidecars
 ```
 
-以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations 和 `plystractl` 检查作为 baseline。
+以仓库内的 `Dockerfile`、`docker-compose.yml`、migrations、`scripts/build-capabilities.ps1` 和 `plystractl` 检查作为 baseline。
 
 ## Compose baseline
 
@@ -29,6 +30,8 @@ docker compose up -d
 | `CORS_ALLOWED_ORIGINS` | localhost 列表 | 显式浏览器 origins。生产模式会拒绝 wildcard CORS。 |
 | `PLYSTRA_SESSION_SECRET` | 开发 placeholder | 用于 HMAC opaque session token 的 secret。 |
 | `PLYSTRA_API_KEY_SECRET` | 开发 placeholder | 用于 HMAC API key 的 secret。生产要求独立强 secret。 |
+| `PLYSTRA_SYSTEM_CAPABILITIES_CONFIG` | 空 | 可选 `system-capabilities.yaml` 显式路径。 |
+| `PLYSTRA_LOCKFILE` | 空 | 可选 capability lockfile 显式路径。 |
 | `HTTP_READ_HEADER_TIMEOUT` | `5s` | 防止慢速 header 读取。 |
 | `HTTP_READ_TIMEOUT` | `30s` | 请求读取超时。 |
 | `HTTP_WRITE_TIMEOUT` | `60s` | 响应写入超时。 |
@@ -37,6 +40,27 @@ docker compose up -d
 | `METRICS_ENABLED` | `false` | 默认关闭 `/metrics`。 |
 
 本地开发的 `.env.example` 使用显式 localhost CORS 值。
+
+## System Capabilities
+
+启动 externalized system capabilities 前，先构建官方 sidecar artifact：
+
+```powershell
+cd C:\Users\i\Documents\GitHub\plystra\plystra
+.\scripts\build-capabilities.ps1
+```
+
+脚本会构建：
+
+- `audit.explainable`
+- `identity.business`
+- `resource.registry`
+- `authorization.resource`
+- `admin.control_plane`
+
+它会把每个 manifest 和 migration bundle 复制到 `capabilities/`，构建本地 binary，并清理旧 lockfile。下次启动时，`plystrad` 会创建 `capabilities/plystra.lock`，其中 pin 住版本和 binary checksum。
+
+System capabilities 是可信启动时模块。不要把这个机制用于第三方 runtime install、hot unload、marketplace 替换 authz/audit/identity，或 Go ABI plugin。
 
 ## 迁移流程
 
@@ -51,6 +75,8 @@ go run ./cmd/plystractl doctor
 ```
 
 生产升级必须使用版本化 migrations。不要把 Ent auto migration 当成生产升级机制。
+
+Runtime database access 使用 Ent。生产 schema 变更通过 `plystra/migrations/` 下的 versioned Atlas-style SQL 文件表示，并记录在 `schema_migrations`。System capability migration bundle 由 `plystrad` 按依赖顺序校验和执行，并记录在 `kernel_capability_migrations`。
 
 ## 启动 Core
 
@@ -72,7 +98,7 @@ GET /api/v1/ready
 GET /api/v1/version
 ```
 
-readiness endpoint 会检查数据库连接和预期 migration/schema 状态。
+readiness endpoint 会检查数据库连接、预期 migration/schema 状态和 required system capability readiness。
 
 ## 生产必填配置
 
@@ -136,7 +162,7 @@ TRACE_VERSION=1.0
 4. 必要时停止或静默写流量。
 5. 应用 migrations。
 6. 运行 `migrate verify`、`ent check`、`doctor`。
-7. Smoke test health、ready、version、`authz/check`、`authz/explain`、Resource Registry 和 AuditLog 查询。
+7. Smoke test health、ready、version、`authz/check`、`authz/explain`、Resource Registry、AuditLog 查询和 `/api/v1/capabilities`。
 
 最低备份命令：
 
