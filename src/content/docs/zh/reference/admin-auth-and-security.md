@@ -3,7 +3,7 @@ title: Admin Auth 与安全边界
 description: Plystra Core 管理 API、用户 session、AdminGrant、scoped API key 和防提权规则的精确说明。
 ---
 
-本文说明 `1.0.0-rc115` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
+本文说明 `1.0.0-rc121` 当前 Core 管理权限模型。这里是控制面安全边界，因此所有规则都写得很明确。
 
 ## 核心规则
 
@@ -161,7 +161,7 @@ authz:check
 POST /api/v1/auth/register
 ```
 
-注册默认关闭，只有 operator 显式开启后才可用。普通注册需要 `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` 和匹配的 `PLYSTRA_AUTH_REGISTRATION_TOKEN`；生产环境还要求 token 至少 32 字符。普通注册会在系统没有 active `instance_super_admin` grant 时被拒绝。
+注册默认关闭，只有 operator 显式开启后才可用。普通注册需要 `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` 和匹配的 `PLYSTRA_AUTH_REGISTRATION_TOKEN`；生产环境还要求 token 至少 32 字符。普通注册会在系统没有 active `instance_super_admin` grant 时被拒绝。公开 user-only 注册可通过 `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED=true` 启用；它不需要 registration token，并且只创建 User，不创建 personal Space、Member、UserMember binding、Space admin grant 或 session。
 
 首个 super admin 的注册 bootstrap 是独立路径：设置 `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true`，并使用 `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`。该路径只在没有 active `instance_super_admin` grant 时可用，会在一个事务中创建 User、personal Space/Member/UserMember、Space admin grant 和初始 `instance_super_admin` grant，然后返回 session token pair。
 

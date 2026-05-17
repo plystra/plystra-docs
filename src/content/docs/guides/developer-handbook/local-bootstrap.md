@@ -31,7 +31,7 @@ alice@example.com / plystra-demo
 bob@example.com / plystra-demo
 ```
 
-The demo seed makes Alice an instance super admin for local development. In a clean production-like instance, use the bootstrap command described below.
+Run `make seed-demo` to make Alice an instance super admin for local development. In a clean production-like instance, use the bootstrap command described below.
 
 ## Bootstrap the First Instance Super Admin
 

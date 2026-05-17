@@ -3,7 +3,7 @@ title: Admin Auth and Security
 description: Exact security model for Plystra Core management APIs, user sessions, admin grants, scoped API keys, and anti-escalation rules.
 ---
 
-This reference documents the current Core management authorization model in `1.0.0-rc115`. It is intentionally explicit because this layer protects the control plane.
+This reference documents the current Core management authorization model in `1.0.0-rc121`. It is intentionally explicit because this layer protects the control plane.
 
 ## Core Rule
 
@@ -161,7 +161,7 @@ Registration route:
 POST /api/v1/auth/register
 ```
 
-Registration is disabled unless an operator explicitly enables it. Ordinary registration requires `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` and a matching `PLYSTRA_AUTH_REGISTRATION_TOKEN`; production also requires that token to be at least 32 characters. Ordinary registration is refused until at least one active `instance_super_admin` grant already exists.
+Registration is disabled unless an operator explicitly enables it. Ordinary registration requires `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` and a matching `PLYSTRA_AUTH_REGISTRATION_TOKEN`; production also requires that token to be at least 32 characters. Ordinary registration is refused until at least one active `instance_super_admin` grant already exists. Public user-only registration can be enabled with `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED=true`; it does not require a registration token and creates only a User, without personal Space, Member, UserMember binding, Space admin grant, or session.
 
 First-super-admin bootstrap through registration is separate: set `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true` and use `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`. This path is only available while no active `instance_super_admin` grant exists, creates the user, a personal Space/Member/UserMember, a Space admin grant, and the initial `instance_super_admin` grant in one transaction, then returns a session token pair.
 

@@ -10,7 +10,7 @@ description: Migrated from the Core repository and updated for the current v1.0 
 | Field | Value |
 |---|---|
 | Product | Plystra |
-| Version | v1.0.0-rc115 |
+| Version | v1.0.0-rc121 |
 | Document Type | Release Candidate test plan |
 | Scope | Stable Self-Hosted Core |
 | Status | RC execution plan |
@@ -44,7 +44,7 @@ disabled-by-default data and metrics surfaces
 This test plan should be executed before tagging:
 
 ```text
-v1.0.0-rc115
+v1.0.0-rc121
 ```
 
 It should be executed again before final:
@@ -774,7 +774,7 @@ Before tagging, fill this out.
 
 ## 22. Final RC Decision
 
-Tag `v1.0.0-rc115` only if:
+Tag `v1.0.0-rc121` only if:
 
 ```text
 all blocking tests pass

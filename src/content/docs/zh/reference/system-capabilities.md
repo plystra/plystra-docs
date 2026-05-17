@@ -3,7 +3,7 @@ title: System Capabilities
 description: Plystra 内置可信系统能力模块的生产边界。
 ---
 
-Plystra `1.0.0-rc115` 把运行入口和官方 system capabilities 都保留在 `plystra/plystra` 仓库中。Kernel 在进程启动时把它们作为内置特权模块加载。
+Plystra `1.0.0-rc121` 把运行入口和官方 system capabilities 都保留在 `plystra/plystra` 仓库中。Kernel 在进程启动时把它们作为内置特权模块加载。
 
 System capabilities 不是业务插件。它们是治理层，后续业务插件必须经过它们约束。
 
@@ -19,7 +19,7 @@ System capabilities 不是业务插件。它们是治理层，后续业务插件
 
 当前模型刻意保持很窄。
 
-`1.0.0-rc115` 允许：
+`1.0.0-rc121` 允许：
 
 - `internal/system/*` 下的内置模块
 - `internal/kernel/contracts` 下的稳定 kernel contract
@@ -28,7 +28,7 @@ System capabilities 不是业务插件。它们是治理层，后续业务插件
 - 依赖排序和 readiness checks
 - kernel 拥有 service registry、route registry、event substrate 和 migration registry
 
-`1.0.0-rc115` 不支持：
+`1.0.0-rc121` 不支持：
 
 - 运行时热卸载或替换 required system capability
 - 第三方 system capability
@@ -101,7 +101,7 @@ Required capability 启动失败时，runtime 必须保持 unready。
 
 - 官方 required capability ID
 - `kind: system_capability`
-- 语义化版本，当前为 `1.0.0-rc115`
+- 语义化版本，当前为 `1.0.0-rc121`
 - required capability 依赖
 - services、routes、events 和 migration ownership
 - `privileged: true`

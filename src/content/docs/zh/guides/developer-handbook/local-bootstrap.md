@@ -31,7 +31,7 @@ alice@example.com / plystra-demo
 bob@example.com / plystra-demo
 ```
 
-本地 demo seed 会让 Alice 成为 instance super admin。全新生产实例需要按下一节 bootstrap。
+运行 `make seed-demo` 会让 Alice 成为本地开发用 instance super admin。全新生产实例需要按下一节 bootstrap。
 
 ## 创建第一个 Instance Super Admin
 

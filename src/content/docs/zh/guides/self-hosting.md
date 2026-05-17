@@ -112,7 +112,7 @@ level = instance_super_admin
 permission_key = *
 ```
 
-本地 demo migration 已经给 Alice 创建了该 grant。非 demo 数据库可在迁移完成后、服务暴露前执行：
+Migrations 不会自动创建该 grant。迁移完成后、服务暴露前执行：
 
 ```bash
 go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>

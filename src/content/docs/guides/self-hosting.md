@@ -112,7 +112,7 @@ level = instance_super_admin
 permission_key = *
 ```
 
-The local demo migration already creates this grant for Alice. For non-demo databases, after migrations and before exposing the service, run:
+Migrations never create this grant automatically. After migrations and before exposing the service, run:
 
 ```bash
 go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
