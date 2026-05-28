@@ -42,19 +42,6 @@ Production rejects the default `plystra:plystra` credentials.
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | Failed login attempts allowed within the login failure window before temporary lockout. |
 | `PLYSTRA_AUTH_LOGIN_WINDOW` | `15m` | Login failure counting window. Duration strings are accepted. |
 | `PLYSTRA_AUTH_LOGIN_LOCKOUT` | `15m` | Temporary lockout duration after too many failed login attempts. |
-| `PLYSTRA_EMAIL_DELIVERY_MODE` / `EMAIL_DELIVERY_MODE` | `log` in development, `capability` when `PLYSTRA_EMAIL_CAPABILITY_URL` is set | Email challenge delivery mode. Production requires `capability` and rejects `log`. |
-| `PLYSTRA_EMAIL_CAPABILITY_URL` / `EMAIL_CAPABILITY_URL` | empty | HTTP endpoint implementing `POST /contract/v1/email/send` from the email delivery capability contract. Required in production. |
-| `PLYSTRA_EMAIL_CAPABILITY_TOKEN` / `EMAIL_CAPABILITY_TOKEN` | empty | Bearer token sent to the email capability endpoint. Required and at least 32 characters in production. |
-| `PLYSTRA_EMAIL_CAPABILITY_TIMEOUT` | `10s` | Timeout for calls to the email capability endpoint. |
-| `PLYSTRA_AUTH_EMAIL_FROM` / `EMAIL_FROM` | empty | Sender address used for verification-code and magic-link emails. Required in production. |
-| `PLYSTRA_AUTH_EMAIL_FROM_NAME` | `Plystra` | Display name used for auth emails. |
-| `PLYSTRA_AUTH_EMAIL_CODE_TTL` | `10m` | Email verification code lifetime. Duration strings or whole minutes are accepted. |
-| `PLYSTRA_AUTH_MAGIC_LINK_TTL` | `10m` | Magic-link token lifetime. Duration strings or whole minutes are accepted. |
-| `PLYSTRA_AUTH_CHALLENGE_MAX_ATTEMPTS` | `5` | Maximum stored attempts for a single email-code challenge before it is locked. |
-| `PLYSTRA_AUTH_EMAIL_SEND_MAX_ATTEMPTS` | `3` | Maximum email-code or magic-link send attempts per normalized email and source IP within the auth lockout window. |
-| `PLYSTRA_PUBLIC_APP_URL` / `PUBLIC_APP_URL` | falls back to `SERVER_PUBLIC_URL` when set, otherwise localhost | Public application URL used to construct magic links when no safe redirect URL is supplied. |
-| `PLYSTRA_AUTH_MAGIC_LINK_PATH` | `/auth/consume` | Path appended to the public app URL for magic-link token consumption. |
-| `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS` | empty | Optional comma-separated HTTPS origins accepted for auth `redirect_url` values in addition to `PLYSTRA_PUBLIC_APP_URL` and `SERVER_PUBLIC_URL`. |
 | `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | Enables ordinary user registration after at least one active `instance_super_admin` exists. |
 | `PLYSTRA_AUTH_REGISTRATION_TOKEN` | empty | Shared registration token required for ordinary registration. Required and at least 32 characters in production when registration is enabled. |
 | `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | Enables public user-only registration without a registration token. This creates only a User; it does not create a personal Space, Member, UserMember binding, Space admin grant, or session. |
@@ -65,7 +52,28 @@ Do not use the placeholder values from `.env.example` in production.
 
 Native auth stores and verifies passwords with Argon2id. Refresh calls rotate both the access token and refresh token. Password changes revoke existing sessions for that User. API keys are stored as HMAC hashes, are shown only once at creation, and should be kept in a secret manager.
 
-Email verification codes and magic links are short-lived, single-use `AuthChallenge` rows. Core stores HMAC hashes for delivered codes and tokens, never plaintext. Delivery is delegated to the independent email capability contract; official implementations are split into separate SMTP and Cloudflare Email Sending plugin repositories. Send and verification attempts are rate-limited by normalized email and source IP. Magic-link `redirect_url` values must use HTTPS and match an explicitly configured origin so challenge tokens are not appended to arbitrary third-party domains.
+Core does not include email verification codes or magic-link sign-in. Those flows live in the independent Complete Auth plugin repository. When enabled, that plugin stores its own short-lived, single-use challenges, writes Core-compatible sessions after magic-link consumption, and uses the independent email contracts repository plus an email provider plugin for delivery.
+
+## Complete Auth Plugin Configuration
+
+These variables belong to the Complete Auth plugin, not Core startup:
+
+| Variable | Default | Description |
+|---|---|---|
+| `AUTH_PLUGIN_LISTEN_ADDR` | `127.0.0.1:8790` | Complete Auth plugin HTTP bind address. |
+| `PLYSTRA_EMAIL_DELIVERY_MODE` / `EMAIL_DELIVERY_MODE` | `log` in development, `capability` when `PLYSTRA_EMAIL_CAPABILITY_URL` is set | Email challenge delivery mode. Production requires `capability` and rejects `log`. |
+| `PLYSTRA_EMAIL_CAPABILITY_URL` / `EMAIL_CAPABILITY_URL` | empty | HTTP endpoint implementing `POST /contract/v1/email/send` from the independent email delivery contract. Required in plugin production mode. |
+| `PLYSTRA_EMAIL_CAPABILITY_TOKEN` / `EMAIL_CAPABILITY_TOKEN` | empty | Bearer token sent to the email capability endpoint. Required and at least 32 characters in plugin production mode. |
+| `PLYSTRA_EMAIL_CAPABILITY_TIMEOUT` | `10s` | Timeout for calls to the email capability endpoint. |
+| `PLYSTRA_AUTH_EMAIL_FROM` / `EMAIL_FROM` | empty | Sender address used for verification-code and magic-link emails. Required in plugin production mode. |
+| `PLYSTRA_AUTH_EMAIL_FROM_NAME` | `Plystra` | Display name used for auth emails. |
+| `PLYSTRA_AUTH_EMAIL_CODE_TTL` | `10m` | Email verification code lifetime. Duration strings or whole minutes are accepted. |
+| `PLYSTRA_AUTH_MAGIC_LINK_TTL` | `10m` | Magic-link token lifetime. Duration strings or whole minutes are accepted. |
+| `PLYSTRA_AUTH_CHALLENGE_MAX_ATTEMPTS` | `5` | Maximum stored attempts for a single email-code challenge before it is locked. |
+| `PLYSTRA_AUTH_EMAIL_SEND_MAX_ATTEMPTS` | `3` | Maximum email-code or magic-link send attempts per normalized email and source IP within the auth lockout window. |
+| `PLYSTRA_PUBLIC_APP_URL` / `PUBLIC_APP_URL` | falls back to `SERVER_PUBLIC_URL` when set, otherwise localhost | Public application URL used by the plugin to construct magic links when no safe redirect URL is supplied. |
+| `PLYSTRA_AUTH_MAGIC_LINK_PATH` | `/auth/consume` | Path appended to the public app URL for magic-link token consumption. |
+| `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS` | empty | Optional comma-separated HTTPS origins accepted for plugin auth `redirect_url` values in addition to `PLYSTRA_PUBLIC_APP_URL` and `SERVER_PUBLIC_URL`. |
 
 Registration is disabled by default. Keep it disabled for enterprise deployments unless an explicit onboarding flow needs it. First-super-admin registration uses a separate bootstrap flag and token so ordinary registration cannot silently create the initial instance owner. Public user-only registration is intentionally narrower than ordinary registration and should be followed by an explicit onboarding or admin-controlled Member binding flow.
 
@@ -106,6 +114,5 @@ With `SERVER_MODE=production`, Core refuses to start if:
 - previous session secret rotation values are too short or placeholders.
 - API key secret must be set to a strong distinct value in production before creating production API keys.
 - ordinary or bootstrap registration is enabled without its matching strong registration token. Public user-only registration does not require a token because it does not create actor bindings or admin grants.
-- email delivery mode is `log`, the email capability URL/token is missing, or the auth email sender is not configured.
 - CORS origins are missing or include `*`.
 - public URL is missing or points to localhost.
