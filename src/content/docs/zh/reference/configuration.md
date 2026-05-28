@@ -42,6 +42,19 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `PLYSTRA_AUTH_LOGIN_MAX_FAILURES` | `8` | 登录失败窗口内允许的失败次数，超过后临时锁定。 |
 | `PLYSTRA_AUTH_LOGIN_WINDOW` | `15m` | 登录失败统计窗口，支持 duration 字符串。 |
 | `PLYSTRA_AUTH_LOGIN_LOCKOUT` | `15m` | 登录失败过多后的临时锁定时长。 |
+| `PLYSTRA_EMAIL_DELIVERY_MODE` / `EMAIL_DELIVERY_MODE` | 开发默认为 `log`，设置 `PLYSTRA_EMAIL_CAPABILITY_URL` 后为 `capability` | Email challenge 发送模式。生产环境必须为 `capability`，拒绝 `log`。 |
+| `PLYSTRA_EMAIL_CAPABILITY_URL` / `EMAIL_CAPABILITY_URL` | 空 | 实现 `POST /contract/v1/email/send` email delivery capability contract 的 HTTP endpoint。生产必填。 |
+| `PLYSTRA_EMAIL_CAPABILITY_TOKEN` / `EMAIL_CAPABILITY_TOKEN` | 空 | Core 调用 email capability endpoint 时发送的 Bearer token。生产必填且至少 32 字符。 |
+| `PLYSTRA_EMAIL_CAPABILITY_TIMEOUT` | `10s` | 调用 email capability endpoint 的超时时间。 |
+| `PLYSTRA_AUTH_EMAIL_FROM` / `EMAIL_FROM` | 空 | verification code 和 magic link 邮件使用的发件地址。生产必填。 |
+| `PLYSTRA_AUTH_EMAIL_FROM_NAME` | `Plystra` | Auth 邮件使用的发件显示名。 |
+| `PLYSTRA_AUTH_EMAIL_CODE_TTL` | `10m` | Email verification code 有效期。支持 duration 字符串或整数分钟。 |
+| `PLYSTRA_AUTH_MAGIC_LINK_TTL` | `10m` | Magic-link token 有效期。支持 duration 字符串或整数分钟。 |
+| `PLYSTRA_AUTH_CHALLENGE_MAX_ATTEMPTS` | `5` | 单个 email-code challenge 被锁定前允许的持久化尝试次数。 |
+| `PLYSTRA_AUTH_EMAIL_SEND_MAX_ATTEMPTS` | `3` | auth lockout 窗口内，每个标准化 email 和来源 IP 允许的 email-code 或 magic-link 发送次数。 |
+| `PLYSTRA_PUBLIC_APP_URL` / `PUBLIC_APP_URL` | 优先回退到 `SERVER_PUBLIC_URL`，再回退到 localhost | 没有安全 redirect URL 时，用于构造 magic link 的公开应用 URL。 |
+| `PLYSTRA_AUTH_MAGIC_LINK_PATH` | `/auth/consume` | 拼接到 public app URL 后的 magic-link token 消费路径。 |
+| `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS` | 空 | 额外允许的 auth `redirect_url` HTTPS origins，逗号分隔；默认只接受 `PLYSTRA_PUBLIC_APP_URL` 和 `SERVER_PUBLIC_URL` 的 origin。 |
 | `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | 启用普通用户注册。系统必须已经存在至少一个 active `instance_super_admin`。 |
 | `PLYSTRA_AUTH_REGISTRATION_TOKEN` | 空 | 普通注册 token。生产环境启用注册时必须设置，且至少 32 字符。 |
 | `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | 启用无需 registration token 的公开 user-only 注册。该模式只创建 User，不创建 personal Space、Member、UserMember binding、Space admin grant 或 session。 |
@@ -51,6 +64,8 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 生产环境不要使用 `.env.example` 中的 placeholder 值。
 
 Native auth 使用 Argon2id 存储和验证密码。Refresh 会同时轮换 access token 和 refresh token。密码变更会撤销该 User 的现有 sessions。API key 只保存 HMAC hash，明文只在创建时返回一次，应放入 secret manager。
+
+Email verification code 和 magic link 使用短生命周期、一次性的 `AuthChallenge` 行。Core 只保存已发送 code 和 token 的 HMAC hash，不持久化明文。发送能力委托给独立 email capability contract；官方 SMTP 和 Cloudflare Email Sending 实现分别位于独立 plugin repository。发送和验证尝试都会按标准化 email 和来源 IP 限速。Magic-link `redirect_url` 必须使用 HTTPS 并匹配显式配置的 origin，避免 challenge token 被拼到任意第三方域名。
 
 注册默认关闭。企业部署除非有明确 onboarding 流程，否则应保持关闭。首个 super admin 注册使用独立 bootstrap flag 和 token，普通注册不能悄悄创建初始 instance owner。公开 user-only 注册刻意比普通注册更窄，后续应由明确 onboarding 或管理员流程绑定 Member。
 
@@ -91,5 +106,6 @@ AuditLog 是 append-only。生产部署应定义 retention 和 export 策略。
 - previous session secret 轮换值过短或为 placeholder。
 - 生产环境必须配置独立强 `PLYSTRA_API_KEY_SECRET` 后再创建生产 API key。
 - 普通注册或 bootstrap 注册开启，但没有配置对应的强注册 token。公开 user-only 注册不要求 token，因为它不会创建 actor binding 或 admin grant。
+- email delivery mode 为 `log`，email capability URL/token 缺失，或 auth email sender 未配置。
 - CORS origins 缺失或包含 `*`。
 - public URL 缺失或指向 localhost。

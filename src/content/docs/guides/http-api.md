@@ -49,6 +49,29 @@ An authenticated key without the required permission returns `ADMIN_PERMISSION_R
 | `GET` | `/api/v1/health` |
 | `GET` | `/api/v1/ready` |
 | `GET` | `/api/v1/version` |
+| `POST` | `/api/v1/auth/register` |
+| `POST` | `/api/v1/auth/login` |
+| `POST` | `/api/v1/auth/email-code` |
+| `POST` | `/api/v1/auth/email-code/verify` |
+| `POST` | `/api/v1/auth/magic-link` |
+| `POST` | `/api/v1/auth/magic-link/consume` |
+| `POST` | `/api/v1/auth/refresh` |
+| `POST` | `/api/v1/auth/logout` |
+
+## Session and Email Challenge Routes
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/auth/register` | Protected registration endpoint. Disabled by default. |
+| `POST` | `/api/v1/auth/login` | Password login. Returns access and refresh tokens. |
+| `POST` | `/api/v1/auth/email-code` | Creates a short-lived email verification-code challenge and sends it through the email capability endpoint. |
+| `POST` | `/api/v1/auth/email-code/verify` | Verifies a six-digit code, consumes the challenge, and marks the User email as verified when the challenge is bound to an active User. |
+| `POST` | `/api/v1/auth/magic-link` | Creates a short-lived magic-link challenge and sends it through the email capability endpoint. |
+| `POST` | `/api/v1/auth/magic-link/consume` | Consumes a magic-link token and creates a Core session for the active User. |
+| `POST` | `/api/v1/auth/refresh` | Rotates the access and refresh tokens. |
+| `POST` | `/api/v1/auth/logout` | Revokes a bearer access token or body refresh token. |
+
+Email challenges are single-use. Core stores only HMAC hashes of delivered codes and tokens. Send and verification attempts are rate-limited by normalized email and source IP. Production must use an external capability endpoint configured with `PLYSTRA_EMAIL_CAPABILITY_URL` and `PLYSTRA_EMAIL_CAPABILITY_TOKEN`; development log mode is rejected in production. Magic-link `redirect_url` values must use HTTPS and match `PLYSTRA_PUBLIC_APP_URL`, `SERVER_PUBLIC_URL`, or `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS`.
 
 ## Protected Routes
 

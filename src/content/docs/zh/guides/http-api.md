@@ -83,12 +83,16 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 |---|---|---|
 | `POST` | `/api/v1/auth/register` | 受保护注册端点。默认关闭；启用后需要 registration token。 |
 | `POST` | `/api/v1/auth/login` | 接收 `email` 和 `password`；返回 access/refresh tokens。 |
+| `POST` | `/api/v1/auth/email-code` | 创建短生命周期 email verification code challenge，并通过 email capability endpoint 发送。 |
+| `POST` | `/api/v1/auth/email-code/verify` | 校验 6 位 code，消费 challenge；如果 challenge 绑定 active User，则标记该 User email 已验证。 |
+| `POST` | `/api/v1/auth/magic-link` | 创建短生命周期 magic-link challenge，并通过 email capability endpoint 发送。 |
+| `POST` | `/api/v1/auth/magic-link/consume` | 消费 magic-link token，并为 active User 创建 Core session。 |
 | `POST` | `/api/v1/auth/refresh` | 接收 `refresh_token`；同时轮换 access token 和 refresh token。 |
 | `POST` | `/api/v1/auth/logout` | 使用 bearer access token 或 body refresh token 撤销 session。 |
 | `GET` | `/api/v1/actor/context` | 需要 access token。返回当前 actor 和 available members。 |
 | `POST` | `/api/v1/actor/switch-member` | 需要 access token。切换 active Member/UserMember binding。 |
 
-登录失败会按标准化 email 和来源 IP 做限速。密码使用 Argon2id 存储和验证。修改 User 密码会撤销该 User 的现有 sessions。
+登录和 email challenge 会按标准化 email 和来源 IP 做限速，包括 challenge 发送和验证尝试。密码使用 Argon2id 存储和验证。修改 User 密码会撤销该 User 的现有 sessions。Email code 和 magic link 都是一次性 challenge；Core 只保存已发送 code/token 的 HMAC hash，不保存明文。生产环境必须配置 `PLYSTRA_EMAIL_CAPABILITY_URL` 和 `PLYSTRA_EMAIL_CAPABILITY_TOKEN`，开发 log mode 在生产会被拒绝。Magic-link `redirect_url` 必须使用 HTTPS，并匹配 `PLYSTRA_PUBLIC_APP_URL`、`SERVER_PUBLIC_URL` 或 `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS`。
 
 本地开发种子账号：
 
