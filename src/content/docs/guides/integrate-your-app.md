@@ -69,7 +69,6 @@ The same shape works through all official SDKs. Use `/api/v1/authz/explain` to r
 ```json
 {
   "data": {
-    "allow": true,
     "decision": "allow",
     "deny_code": null,
     "reason": "at least one matching permission grant covers the target resource",

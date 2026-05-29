@@ -37,6 +37,7 @@ Errors:
 |---|---|---|
 | Public operational routes | health, ready, version | No token required. |
 | Scoped server API key | capabilities, resource registry, authz, audit | Send `X-Plystra-API-Key`. |
+| User Bearer session | actor context, admin console, management routes | Send `Authorization: Bearer <access_token>`. |
 
 Missing or invalid credentials return `AUTHENTICATION_REQUIRED` with HTTP 401.
 
@@ -58,12 +59,16 @@ An authenticated key without the required permission returns `ADMIN_PERMISSION_R
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/v1/auth/register` | Protected registration endpoint. Disabled by default. |
+| `POST` | `/api/v1/auth/register` | Protected native registration endpoint. Disabled by default. |
 | `POST` | `/api/v1/auth/login` | Password login. Returns access and refresh tokens. |
 | `POST` | `/api/v1/auth/refresh` | Rotates the access and refresh tokens. |
 | `POST` | `/api/v1/auth/logout` | Revokes a bearer access token or body refresh token. |
 
-Core intentionally keeps the auth surface minimal: protected registration, password login, session refresh/logout, and actor context. Email verification codes, magic-link sign-in, and other expanded auth flows live in the independent Complete Auth plugin repository. When that plugin enables email delivery, it depends on the independent email contracts repository and a provider plugin such as SMTP or Cloudflare Email Sending.
+Core intentionally keeps the auth surface minimal: protected registration, password login, session refresh/logout, and actor context.
+
+Ordinary Core registration creates a User, default Member, default UserMember, session, and a Space admin grant inside the single Simple Mode default Space `space_default`. It does not create an instance super admin. Public user-only Core registration is narrower and creates only a User.
+
+Email verification codes, magic-link sign-in, and other expanded auth flows live in the independent Complete Auth plugin repository. When that plugin enables email delivery, it depends on the independent email contracts repository and a provider plugin such as SMTP or Cloudflare Email Sending.
 
 The Complete Auth plugin exposes its own public routes:
 
@@ -76,6 +81,8 @@ The Complete Auth plugin exposes its own public routes:
 
 Plugin challenges are single-use. The plugin stores only HMAC hashes of delivered codes and tokens. Send and verification attempts are rate-limited by normalized email and source IP. Production must use an external email capability endpoint; development log mode is rejected in production. Magic-link `redirect_url` values must use HTTPS and match the plugin allowlist.
 
+Complete Auth plugin non-sensitive runtime settings are stored in `plugin_auth_settings`, including public registration, delivery mode, capability URL, sender address, redirect allowlist, TTLs, rate limits, max body size, and trusted proxy CIDRs. Secrets remain environment variables or secret-manager values.
+
 ## Protected Routes
 
 | Method | Path | Permission |
@@ -83,7 +90,7 @@ Plugin challenges are single-use. The plugin stores only HMAC hashes of delivere
 | `GET` | `/api/v1/capabilities` | `capabilities:read` |
 | `GET` | `/api/v1/resource-types` | `resource_registry:read` |
 | `POST` | `/api/v1/authz/check` | `authz:check` |
-| `POST` | `/api/v1/authz/explain` | `authz:explain` |
+| `POST` | `/api/v1/authz/explain` | `authz:check` |
 | `GET` | `/api/v1/audit/logs` | `audit:read` |
 | `GET` | `/api/v1/audit/logs/{id}` | `audit:read` |
 
@@ -128,14 +135,12 @@ Inline context is trusted server-side input. Build actor, resource, and grant fi
 
 The response includes:
 
-- `allow`
 - `decision`
 - `deny_code`
 - `reason`
 - `trace_id`
-- `audit_log_id`
 - `matched_candidates`
-- `trace`
+- `audit.audit_log_id`
 
 Current deny codes include:
 

@@ -44,7 +44,7 @@ Plystra Core 通过环境变量配置。生产环境中，`cmd/plystrad` 会在�
 | `PLYSTRA_AUTH_LOGIN_LOCKOUT` | `15m` | 登录失败过多后的临时锁定时长。 |
 | `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | 启用普通用户注册。系统必须已经存在至少一个 active `instance_super_admin`。 |
 | `PLYSTRA_AUTH_REGISTRATION_TOKEN` | 空 | 普通注册 token。生产环境启用注册时必须设置，且至少 32 字符。 |
-| `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | 启用无需 registration token 的公开 user-only 注册。该模式只创建 User，不创建 personal Space、Member、UserMember binding、Space admin grant 或 session。 |
+| `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | 启用无需 registration token 的公开 user-only 注册。该模式只创建 User，不创建 Member、UserMember binding、Space admin grant 或 session。 |
 | `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED` | `false` | 在还没有 active `instance_super_admin` 时，启用受保护的首个 super admin 注册路径。 |
 | `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN` | 空 | 独立 bootstrap 注册 token。生产环境启用 bootstrap 注册时必须设置，且至少 32 字符。 |
 
@@ -56,26 +56,43 @@ Core 不内置 email verification code 或 magic-link sign-in。这些流程位�
 
 ## Complete Auth Plugin 配置
 
-这些变量属于 Complete Auth plugin，不属于 Core 启动配置：
+Complete Auth plugin 只从环境变量读取 secrets 和进程启动值。非敏感、经常变化的运行时设置保存在插件数据库表 `plugin_auth_settings`。
+
+环境变量：
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
 | `AUTH_PLUGIN_LISTEN_ADDR` | `127.0.0.1:8790` | Complete Auth plugin HTTP bind 地址。 |
-| `PLYSTRA_EMAIL_DELIVERY_MODE` / `EMAIL_DELIVERY_MODE` | 开发默认为 `log`，设置 `PLYSTRA_EMAIL_CAPABILITY_URL` 后为 `capability` | Email challenge 发送模式。plugin 生产环境必须为 `capability`，拒绝 `log`。 |
-| `PLYSTRA_EMAIL_CAPABILITY_URL` / `EMAIL_CAPABILITY_URL` | 空 | 实现独立 email delivery contract `POST /contract/v1/email/send` 的 HTTP endpoint。plugin 生产环境必填。 |
-| `PLYSTRA_EMAIL_CAPABILITY_TOKEN` / `EMAIL_CAPABILITY_TOKEN` | 空 | plugin 调用 email capability endpoint 时发送的 Bearer token。plugin 生产环境必填且至少 32 字符。 |
-| `PLYSTRA_EMAIL_CAPABILITY_TIMEOUT` | `10s` | 调用 email capability endpoint 的超时时间。 |
-| `PLYSTRA_AUTH_EMAIL_FROM` / `EMAIL_FROM` | 空 | verification code 和 magic link 邮件使用的发件地址。plugin 生产环境必填。 |
-| `PLYSTRA_AUTH_EMAIL_FROM_NAME` | `Plystra` | Auth 邮件使用的发件显示名。 |
-| `PLYSTRA_AUTH_EMAIL_CODE_TTL` | `10m` | Email verification code 有效期。支持 duration 字符串或整数分钟。 |
-| `PLYSTRA_AUTH_MAGIC_LINK_TTL` | `10m` | Magic-link token 有效期。支持 duration 字符串或整数分钟。 |
-| `PLYSTRA_AUTH_CHALLENGE_MAX_ATTEMPTS` | `5` | 单个 email-code challenge 被锁定前允许的持久化尝试次数。 |
-| `PLYSTRA_AUTH_EMAIL_SEND_MAX_ATTEMPTS` | `3` | auth lockout 窗口内，每个标准化 email 和来源 IP 允许的 email-code 或 magic-link 发送次数。 |
-| `PLYSTRA_PUBLIC_APP_URL` / `PUBLIC_APP_URL` | 优先回退到 `SERVER_PUBLIC_URL`，再回退到 localhost | 没有安全 redirect URL 时，plugin 用于构造 magic link 的公开应用 URL。 |
-| `PLYSTRA_AUTH_MAGIC_LINK_PATH` | `/auth/consume` | 拼接到 public app URL 后的 magic-link token 消费路径。 |
-| `PLYSTRA_AUTH_ALLOWED_REDIRECT_ORIGINS` | 空 | 额外允许的 plugin auth `redirect_url` HTTPS origins，逗号分隔；默认只接受 `PLYSTRA_PUBLIC_APP_URL` 和 `SERVER_PUBLIC_URL` 的 origin。 |
+| `DATABASE_URL` / `PLYSTRA_DATABASE_URL` | Core database URL | 与 Core 相同的 PostgreSQL 数据库。 |
+| `PLYSTRA_SESSION_SECRET` | 空 | 与 Core 相同的 session secret，用于创建 Core-compatible session。生产必填。 |
+| `PLYSTRA_SESSION_SECRET_PREVIOUS` | 空 | secret 轮换期间接受的旧 session secrets。 |
+| `PLYSTRA_EMAIL_CAPABILITY_TOKEN` / `EMAIL_CAPABILITY_TOKEN` | 空 | 调用配置的 email capability endpoint 时发送的 Bearer secret。DB 设置 `email_delivery_mode` 为 `capability` 时必填。 |
 
-注册默认关闭。企业部署除非有明确 onboarding 流程，否则应保持关闭。首个 super admin 注册使用独立 bootstrap flag 和 token，普通注册不能悄悄创建初始 instance owner。公开 user-only 注册刻意比普通注册更窄，后续应由明确 onboarding 或管理员流程绑定 Member。
+`plugin_auth_settings` 数据库设置：
+
+| 设置 | 默认值 | 说明 |
+|---|---|---|
+| `public_registration_enabled` | `false` | 启用 Complete Auth 的匿名公开注册。 |
+| `email_delivery_mode` | `"log"` | 开发使用 `log`，生产邮件发送使用 `capability`。 |
+| `email_capability_url` | `""` | 实现 `POST /contract/v1/email/send` 的 HTTPS endpoint。 |
+| `email_capability_timeout` | `"10s"` | 调用 capability endpoint 的 HTTP timeout。 |
+| `email_from_address` | `""` | 已验证 sender email address；capability mode 必填。 |
+| `email_from_name` | `"Plystra"` | Sender display name。 |
+| `public_app_url` | `""` | fallback magic link 的公开应用 base URL。 |
+| `server_public_url` | `""` | fallback magic link 的公开服务 URL。 |
+| `magic_link_path` | `"/auth/consume"` | fallback magic-link consume path。 |
+| `allowed_redirect_origins` | `[]` | 额外允许的 HTTPS redirect origins。 |
+| `email_code_ttl` | `"10m"` | Verification code 有效期。 |
+| `magic_link_ttl` | `"10m"` | Magic-link 有效期。 |
+| `auth_challenge_max_attempts` | `5` | 单个持久化 challenge 的最大验证尝试次数。 |
+| `email_send_max_attempts` | `3` | rate-limit window 内最大 challenge 发送次数。 |
+| `login_failure_limit` | `8` | lockout 前允许的登录失败次数。 |
+| `login_failure_window` | `"15m"` | 登录失败统计窗口。 |
+| `login_failure_lockout` | `"15m"` | 临时 lockout 时长。 |
+| `max_request_body_bytes` | `1048576` | JSON request body 最大字节数。 |
+| `trusted_proxy_cidrs` | `[]` | 允许提供 forwarded client IP headers 的反向代理。 |
+
+Complete Auth 公开注册会在 `space_default` 中创建普通 active User 以及 default Member/UserMember binding。它不会创建 instance super-admin grant 或公开 admin 权限。企业部署除非有明确 onboarding 流程，否则应保持公开注册关闭。
 
 ## CORS 与请求元数据
 

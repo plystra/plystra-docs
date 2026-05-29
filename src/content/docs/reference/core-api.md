@@ -1,11 +1,11 @@
 ---
-title: Kernel API Reference
-description: Plystra Phase 1 API response envelope, authentication, and endpoint list.
+title: Core API Reference
+description: Plystra Core v1.0 API response envelope, authentication, and stable endpoint groups.
 ---
 
-# Kernel API
+# Core API
 
-The Kernel API uses the `/api/v1` prefix and returns JSON envelopes.
+The Core API uses the `/api/v1` prefix and returns JSON envelopes.
 
 ## Public
 
@@ -15,7 +15,7 @@ The Kernel API uses the `/api/v1` prefix and returns JSON envelopes.
 
 ## Protected
 
-All protected routes require `X-Plystra-API-Key`.
+Protected routes require either an admin Bearer session or a scoped server API key, depending on the route and trust boundary. Inline Context Mode requires `X-Plystra-API-Key` because the request body contains trusted server-side actor, resource, and grant context.
 
 - `GET /api/v1/capabilities`
 - `GET /api/v1/resource-types`
@@ -59,7 +59,6 @@ All protected routes require `X-Plystra-API-Key`.
 ```json
 {
   "data": {
-    "allow": true,
     "decision": "allow",
     "deny_code": null,
     "reason": "at least one matching permission grant covers the target resource",

@@ -161,9 +161,13 @@ authz:check
 POST /api/v1/auth/register
 ```
 
-注册默认关闭，只有 operator 显式开启后才可用。普通注册需要 `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` 和匹配的 `PLYSTRA_AUTH_REGISTRATION_TOKEN`；生产环境还要求 token 至少 32 字符。普通注册会在系统没有 active `instance_super_admin` grant 时被拒绝。公开 user-only 注册可通过 `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED=true` 启用；它不需要 registration token，并且只创建 User，不创建 personal Space、Member、UserMember binding、Space admin grant 或 session。
+注册默认关闭，只有 operator 显式开启后才可用。普通注册需要 `PLYSTRA_AUTH_REGISTRATION_ENABLED=true` 和匹配的 `PLYSTRA_AUTH_REGISTRATION_TOKEN`；生产环境还要求 token 至少 32 字符。普通注册会在系统没有 active `instance_super_admin` grant 时被拒绝。
 
-首个 super admin 的注册 bootstrap 是独立路径：设置 `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true`，并使用 `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`。该路径只在没有 active `instance_super_admin` grant 时可用，会在一个事务中创建 User、personal Space/Member/UserMember、Space admin grant 和初始 `instance_super_admin` grant，然后返回 session token pair。
+普通注册会在单个 Simple Mode 应用默认 Space `space_default` 内创建 User、default Member、default UserMember、session 和 Space admin grant。它不会为每个 User 创建一个 Space，也不会创建 instance super admin。
+
+公开 user-only 注册可通过 `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED=true` 启用；它不需要 registration token，并且只创建 User，不创建 Member、UserMember binding、admin grant 或 session。
+
+首个 super admin 的注册 bootstrap 是独立路径：设置 `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED=true`，并使用 `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN`。该路径只在没有 active `instance_super_admin` grant 时可用，会在一个事务中创建 User、Simple Mode 默认 Space/Member/UserMember、Space admin grant 和初始 `instance_super_admin` grant，然后返回 session token pair。
 
 登录路由：
 

@@ -1,9 +1,9 @@
 ---
-title: Plystra Core
-description: Self-hosted explainable authorization and audit for existing applications.
+title: Plystra
+description: Self-hosted identity, authorization, audit, and governed backend capabilities for production applications.
 template: splash
 hero:
-  tagline: Protect one action first. No user migration, no organization sync, no resource mirror required.
+  tagline: Start by protecting one action. Grow toward a plugin-driven Backend OS without replacing the authorization foundation.
   actions:
     - text: Quickstart
       link: /getting-started/
@@ -20,44 +20,60 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Start Here
+## Stability Levels
 
-Phase 1 starts with Context Mode:
+Plystra documentation uses three maturity labels:
 
 ```text
-existing backend -> Plystra authz/check -> existing backend continues
+Stable: implemented behavior you can rely on in the current self-hosted release.
+Experimental: preview behavior that may change as real integrations shape it.
+Vision: long-term Backend OS direction, not a near-term release promise.
 ```
 
-Your application remains the source of truth for users, memberships, roles, and business objects.
+Current stable scope is self-hosted Core: minimal native auth, actor context, API keys, explainable authorization, Resource Registry, AuditLog, templates metadata, plugin metadata, Docker, migrations, and SDK support for the stable HTTP surface.
+
+Expanded authentication is intentionally outside Core. Use the Complete Auth plugin for public password registration, email verification codes, magic links, and email capability integration.
+
+## Start Here
 
 <CardGrid>
 	<Card title="Quickstart" icon="rocket" href="/getting-started/">
-		Start Plystra, apply migrations, build trusted system capabilities, and protect an invoice approval action with inline server-side context.
+		Start Plystra with Docker or Go, apply migrations, bootstrap a demo admin explicitly, and protect an invoice approval action.
 	</Card>
 	<Card title="HTTP API" icon="document" href="/guides/http-api/">
-		Review envelopes, API-key protection, protected routes, and Context Mode request/response shapes.
+		Review envelopes, Bearer sessions, API keys, Context Mode, and Complete Auth plugin routes.
 	</Card>
 	<Card title="SDKs" icon="right-arrow" href="/guides/sdks/">
-		Use the same Phase 1 API surface from TypeScript, Python, and Go.
+		Use consistent TypeScript, Python, and Go clients for system, auth, actor, authz, audit, and registry calls.
 	</Card>
 	<Card title="Audit Trace" icon="open-book" href="/reference/audit-trace/">
 		Inspect allow/deny decisions through trace and audit records.
 	</Card>
 </CardGrid>
 
-## What Phase 1 Covers
+## Current Product Shape
 
 <CardGrid stagger>
 	<Card title="Core runtime" icon="rocket">
 		The `plystra/plystra` repository is the runtime entrypoint. It loads privileged system capabilities at startup and exposes `/api/v1`.
 	</Card>
 	<Card title="System capabilities" icon="setting">
-		Identity, authorization, resource registry, audit, and admin control remain separate privileged capability modules.
+		Identity, authorization, resource registry, audit, and admin control are system capabilities, not ordinary optional business plugins.
 	</Card>
 	<Card title="Context Mode" icon="approve-check-circle">
 		A trusted backend passes actor, resource, and grants inline to protect one real action without migration.
 	</Card>
 	<Card title="Strict boundary" icon="lock">
-		Protected routes require a scoped server API key. Inline context must never come directly from untrusted clients.
+		Inline context requires a scoped server API key. Bearer user sessions are for human/admin flows and actor context.
 	</Card>
 </CardGrid>
+
+## Simple Mode
+
+Simple Mode is a single-space application mode. It uses one application-level default Space per deployment:
+
+```text
+User -> default UserMember -> default Member -> space_default
+```
+
+It does not create one default Space per User. If an application later introduces multiple explicit Spaces, existing data may need reassignment, but the authorization foundation remains the same.

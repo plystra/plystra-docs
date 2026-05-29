@@ -1,9 +1,9 @@
 ---
-title: Plystra Core
-description: 面向可解释业务权限的自托管身份与授权核心。
+title: Plystra
+description: 面向生产应用的自托管身份、授权、审计和受治理后端能力。
 template: splash
 hero:
-  tagline: 用于账号身份分离、资源级作用域权限、可解释授权决策和追加式审计日志的自托管 Core。
+  tagline: 先保护一个动作，再逐步走向 plugin-driven Backend OS；不替换你的授权基础。
   actions:
     - text: 开发者手册
       link: /zh/guides/developer-handbook/
@@ -20,13 +20,21 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## 从这里开始
+## 稳定性层级
 
-如果你要把 Plystra 接到现有后端，先看开发者手册。它已经拆成多个专题页，用真实 API 带你走完整路径，并明确凭证选择、安全边界、SDK 用法、排错和测试方式：
+Plystra 文档按三个成熟度层级组织：
 
 ```text
-注册资源类型 -> 创建 Space 和身份链 -> 授权角色 -> 登记资源 -> 调用 authz/check
+Stable：当前自托管版本已经实现、可以依赖的行为。
+Experimental：preview 行为，会随真实接入继续调整。
+Vision：长期 Backend OS 方向，不是近期 release 承诺。
 ```
+
+当前稳定范围是自托管 Core：minimal native auth、actor context、API keys、可解释授权、Resource Registry、AuditLog、template metadata、plugin metadata、Docker、migrations，以及覆盖稳定 HTTP surface 的 SDK。
+
+完整认证能力有意放在 Core 之外。公开密码注册、email verification code、magic link 和 email capability integration 使用独立 Complete Auth plugin。
+
+## 从这里开始
 
 <CardGrid>
 	<Card title="开发者手册" icon="open-book" href="/zh/guides/developer-handbook/">
@@ -39,14 +47,14 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 		启动 Core、应用迁移、运行 Finance demo，并验证 v1.0 release checks。
 	</Card>
 	<Card title="查看 API 面" icon="document" href="/zh/guides/http-api/">
-		查看响应 envelope、认证层、受保护路由和 endpoint 分组。
+		查看响应 envelope、Bearer session、API key、Context Mode 和 Complete Auth plugin 路由。
 	</Card>
 	<Card title="Admin Auth 与安全边界" icon="lock" href="/zh/reference/admin-auth-and-security/">
 		理解 AdminGrant level、API key scope、路由权限映射和防提权规则。
 	</Card>
 </CardGrid>
 
-## Plystra v1.0 覆盖范围
+## 当前产品形态
 
 <CardGrid stagger>
 	<Card title="可解释身份链路" icon="approve-check-circle">
@@ -65,6 +73,16 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 		PostgreSQL、版本化迁移、Ent schema 检查、Docker Compose 和生产安全 guard 都属于 Core 的交付范围。
 	</Card>
 	<Card title="受保护 API 面" icon="lock">
-		非公开 Core API 需要 Bearer user session with an active admin grant；Data Console 和 metrics 默认关闭。
+		Inline context 需要 scoped server API key。Bearer user session 用于人类/admin 流程和 actor context。
 	</Card>
 </CardGrid>
+
+## Simple Mode
+
+Simple Mode 是单 Space 应用模式。每个部署使用一个应用级默认 Space：
+
+```text
+User -> default UserMember -> default Member -> space_default
+```
+
+它不会为每个 User 创建一个默认 Space。如果应用之后引入多个显式 Spaces，现有数据可能需要重新归属，但授权基础不需要替换。

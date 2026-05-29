@@ -18,8 +18,13 @@ Use the repository `Dockerfile`, `docker-compose.yml`, migrations, and `plystrac
 
 ```bash
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build postgres
+docker compose run --rm plystra-core plystractl migrate up
+docker compose run --rm plystra-core plystractl migrate verify
+docker compose up -d plystra-core
 ```
+
+Compose does not auto-run migrations. Apply and verify migrations explicitly before starting Core or before rolling out a new image.
 
 Important Compose variables:
 
@@ -34,6 +39,11 @@ Important Compose variables:
 | `HTTP_READ_TIMEOUT` | `30s` | Request read timeout. |
 | `HTTP_WRITE_TIMEOUT` | `60s` | Response write timeout. |
 | `HTTP_IDLE_TIMEOUT` | `120s` | Keep-alive idle timeout. |
+| `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | Enables token-protected ordinary Core registration after an instance super admin exists. |
+| `PLYSTRA_AUTH_REGISTRATION_TOKEN` | empty | Shared token for ordinary Core registration. Use a strong 32+ character value when enabled. |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED` | `false` | Enables the protected first-super-admin registration path only while no instance super admin exists. |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN` | empty | Separate strong token for first-super-admin registration bootstrap. |
+| `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | Enables narrow public user-only Core registration. It creates only a User. |
 | `DATA_CONSOLE_ENABLED` | `false` | Preview data routes are disabled by default. |
 | `METRICS_ENABLED` | `false` | `/metrics` is disabled by default. |
 
@@ -119,6 +129,29 @@ go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
 ```
 
 If an active instance super admin already exists, the command refuses to run. After bootstrap, sign in as that user and use `/api/v1/admin/grants` to create additional administrators.
+
+## Complete Auth Plugin
+
+Core intentionally keeps the auth surface small: protected registration, password login, refresh/logout, and actor context. Public registration, email verification codes, magic links, and email-provider integration live in the independent Complete Auth plugin repository.
+
+Build the plugin from the parent workspace so the independent `email-contracts` repository is available to Go module replacement:
+
+```bash
+cd plystra
+docker build -f plugin-auth-complete/Dockerfile -t plystra-auth-complete .
+```
+
+Apply the Complete Auth plugin SQL migrations to the same PostgreSQL database before starting the plugin. The plugin stores its non-sensitive runtime settings in `plugin_auth_settings`, including public registration, delivery mode, capability URL, sender address, redirect allowlist, TTLs, rate limits, max body size, and trusted proxy CIDRs. Secrets remain environment variables or secret-manager values.
+
+Production email delivery requires:
+
+```text
+email_delivery_mode = "capability"
+email_capability_url = "https://..."
+email_from_address = "no-reply@example.com"
+```
+
+The capability URL must implement the independent email delivery contract. Official provider plugin repositories include SMTP and Cloudflare Email Sending.
 
 ## Reverse Proxy and Client IP
 

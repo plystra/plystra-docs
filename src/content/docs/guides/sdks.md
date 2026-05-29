@@ -1,9 +1,9 @@
 ---
 title: SDKs
-description: Use the Plystra Phase 1 API from TypeScript, Python, and Go.
+description: Use the stable Plystra API from TypeScript, Python, and Go.
 ---
 
-Plystra SDKs wrap the Kernel Phase 1 HTTP envelope and Context Mode authorization flow.
+Plystra SDKs wrap the stable HTTP envelope, native session auth, actor context, Context Mode authorization, Resource Registry, and AuditLog reads.
 
 Use SDKs from trusted server-side code. Do not put the Plystra API key in browser or mobile clients.
 
@@ -17,11 +17,15 @@ Use SDKs from trusted server-side code. Do not put the Plystra API key in browse
 
 ## Supported Kernel Surfaces
 
-- health, readiness, and version
+- public health, readiness, and version
+- native `auth.register`, `auth.login`, `auth.refresh`, and `auth.logout`
+- `actor.context` and `actor.switchMember`
 - system capabilities
 - resource type registry
 - `authz.check` and `authz.explain`
 - audit log list/detail
+
+`apiKey` sends `X-Plystra-API-Key` for server-to-server routes. `accessToken` sends `Authorization: Bearer` for actor/session routes. Auth register/login/refresh/logout intentionally skip any configured credential.
 
 ## TypeScript
 
@@ -32,6 +36,14 @@ const plystra = new PlystraClient({
   baseUrl: "https://plystra.internal",
   apiKey: process.env.PLYSTRA_API_KEY,
 });
+
+const session = await plystra.auth.login({
+  email: "alice@example.com",
+  password: "plystra-demo",
+});
+
+plystra.setAccessToken(session.access_token);
+const actor = await plystra.actor.context();
 
 const decision = await plystra.authz.check({
   actor: {
@@ -66,6 +78,13 @@ const decision = await plystra.authz.check({
 from plystra import Plystra
 
 with Plystra("https://plystra.internal", api_key="ply_kernel_secret") as plystra:
+    session = plystra.auth.login(
+        email="alice@example.com",
+        password="plystra-demo",
+    )
+    plystra.set_access_token(session["access_token"])
+    actor = plystra.actor.context()
+
     decision = plystra.authz.check(
         actor={
             "user_id": "user_external_alice",
@@ -100,6 +119,17 @@ client := plystra.NewClient(
 	"https://plystra.internal",
 	plystra.WithAPIKey(os.Getenv("PLYSTRA_API_KEY")),
 )
+
+session, err := client.Auth.Login(ctx, plystra.AuthLoginInput{
+	Email:    "alice@example.com",
+	Password: "plystra-demo",
+})
+if err != nil {
+	return err
+}
+client.SetAccessToken(session["access_token"].(string))
+
+actor, err := client.Actor.Context(ctx)
 
 decision, err := client.Authz.Check(ctx, plystra.AuthzCheckInput{
 	Actor: &plystra.ActorContext{

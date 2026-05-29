@@ -18,8 +18,13 @@ reverse proxy / load balancer
 
 ```bash
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build postgres
+docker compose run --rm plystra-core plystractl migrate up
+docker compose run --rm plystra-core plystractl migrate verify
+docker compose up -d plystra-core
 ```
+
+Compose 不会自动执行 migrations。启动 Core 或滚动新镜像前，需要显式 apply 并 verify migrations。
 
 重要 Compose 变量：
 
@@ -34,6 +39,11 @@ docker compose up -d
 | `HTTP_READ_TIMEOUT` | `30s` | 请求读取超时。 |
 | `HTTP_WRITE_TIMEOUT` | `60s` | 响应写入超时。 |
 | `HTTP_IDLE_TIMEOUT` | `120s` | keep-alive idle timeout。 |
+| `PLYSTRA_AUTH_REGISTRATION_ENABLED` | `false` | 系统已有 instance super admin 后，启用 token-protected 普通 Core 注册。 |
+| `PLYSTRA_AUTH_REGISTRATION_TOKEN` | 空 | 普通 Core 注册共享 token。启用时使用 32+ 字符强值。 |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_ENABLED` | `false` | 仅在还没有 instance super admin 时启用受保护首个 super admin 注册路径。 |
+| `PLYSTRA_BOOTSTRAP_REGISTRATION_TOKEN` | 空 | 独立首个 super admin bootstrap 强 token。 |
+| `PLYSTRA_AUTH_PUBLIC_USER_REGISTRATION_ENABLED` | `false` | 启用更窄的公开 user-only Core 注册；只创建 User。 |
 | `DATA_CONSOLE_ENABLED` | `false` | 默认关闭 preview data routes。 |
 | `METRICS_ENABLED` | `false` | 默认关闭 `/metrics`。 |
 
@@ -119,6 +129,29 @@ go run ./cmd/plystractl admin bootstrap-super-admin --user-id <existing_user_id>
 ```
 
 如果系统里已经存在 active instance super admin，这个命令会拒绝执行。完成 bootstrap 后，用该用户登录，再通过 `/api/v1/admin/grants` 创建更多管理员。
+
+## Complete Auth Plugin
+
+Core 有意只保留最小认证面：受保护注册、密码登录、refresh/logout 和 actor context。公开注册、email verification code、magic link 和邮件 provider 集成位于独立 Complete Auth plugin repo。
+
+从父级 workspace 构建插件，这样 Go module replacement 能找到独立 `email-contracts` 仓库：
+
+```bash
+cd plystra
+docker build -f plugin-auth-complete/Dockerfile -t plystra-auth-complete .
+```
+
+启动插件前，把 Complete Auth plugin SQL migrations 应用到同一个 PostgreSQL 数据库。插件把非敏感运行时设置保存在 `plugin_auth_settings`，包括 public registration、delivery mode、capability URL、sender address、redirect allowlist、TTL、rate limit、max body size 和 trusted proxy CIDR。Secrets 仍然使用环境变量或 secret manager。
+
+生产邮件发送必须配置：
+
+```text
+email_delivery_mode = "capability"
+email_capability_url = "https://..."
+email_from_address = "no-reply@example.com"
+```
+
+`email_capability_url` 必须实现独立 email delivery contract。官方 provider plugin repo 包括 SMTP 和 Cloudflare Email Sending。
 
 ## 反向代理与客户端 IP
 

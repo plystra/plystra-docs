@@ -90,6 +90,8 @@ API 接受 `X-Request-ID`。未提供时，middleware 会生成 request ID。
 
 Core 只保留最小认证面：受保护注册、密码登录、session refresh/logout 和 actor context。Email verification code、magic-link sign-in 等完整认证能力位于独立 Complete Auth plugin repo。该插件启用邮件发送时，会依赖独立 email contracts repo 和 SMTP、Cloudflare Email Sending 等 provider plugin。
 
+普通 Core 注册会在单个 Simple Mode 默认 Space `space_default` 内创建 User、default Member、default UserMember、session 和 Space admin grant。它不会创建 instance super admin。公开 user-only Core 注册更窄，只创建 User。
+
 Complete Auth plugin 暴露自己的公开路由：
 
 | Method | Path | 说明 |
@@ -100,6 +102,8 @@ Complete Auth plugin 暴露自己的公开路由：
 | `POST` | `/api/v1/auth/magic-link/consume` | 消费 magic-link token，并为 active User 创建 Core-compatible session。 |
 
 插件 challenge 都是一次性的。插件只保存已发送 code/token 的 HMAC hash，不保存明文。发送和验证尝试都会按标准化 email 和来源 IP 限速。生产环境必须使用外部 email capability endpoint，开发 log mode 在生产会被拒绝。Magic-link `redirect_url` 必须使用 HTTPS 并匹配插件 allowlist。
+
+Complete Auth plugin 的非敏感运行时设置保存在 `plugin_auth_settings`，包括 public registration、delivery mode、capability URL、sender address、redirect allowlist、TTL、rate limit、max body size 和 trusted proxy CIDR。Secrets 保持环境变量或 secret-manager 值。
 
 本地开发种子账号：
 

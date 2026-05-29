@@ -111,7 +111,7 @@ Context Mode 允许可信后端 inline 传入 actor、resource 和可选 grants�
 
 Inline context 只能用 API key。Session 调用会返回 `INLINE_CONTEXT_REQUIRES_API_KEY`。Scoped API key 会先按 inline actor/resource 的 Space 或解析到的 Group 做 `authz:check` 权限校验，然后才进入授权引擎。
 
-响应包含 `allow`、`decision`、`deny_code`、`reason`、`trace_id`、`audit_log_id` 和 `audit`。`/authz/explain` 返回完整决策 trace。
+响应包含 `decision`、`deny_code`、`reason`、`trace_id`、`audit_log_id` 和 `audit`。`/authz/explain` 返回完整决策 trace。
 
 常见 deny code：
 
