@@ -153,6 +153,16 @@ email_from_address = "no-reply@example.com"
 
 `email_capability_url` 必须实现独立 email delivery contract。官方 provider plugin repo 包括 SMTP 和 Cloudflare Email Sending。
 
+## Backend OS Alpha Templates
+
+如需可审计的一键初始化 scaffold，可以从官方模板生成应用目录：
+
+```bash
+go run ./cmd/plystractl templates create --template auth-ready-saas --name "Acme SaaS" --out ./acme-saas
+```
+
+生成目录包含 `docker-compose.yml`、`.env.example`、template manifest、install explanation 和 README。它不会写入真实 secrets，不会自动执行 migrations，也不会创建第一个 instance super admin。先审阅生成文件，设置生产 secrets，再按生成的 README 启动和验证。
+
 ## 反向代理与客户端 IP
 
 只有配置 `TRUSTED_PROXIES` 时，Plystra 才信任 forwarded IP headers。否则 request IP metadata 来自 `RemoteAddr`。

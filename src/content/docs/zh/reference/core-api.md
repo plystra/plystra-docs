@@ -57,7 +57,7 @@ Authorization: Bearer <access_token>
 - `POST /api/v1/authz/explain`
 - `GET /api/v1/audit/logs`
 
-`/api/v1/plugins`、`/api/v1/templates` 和 `/api/v1/data` 在当前 Core API 中属于 preview metadata 或 feature-flagged surface，不代表稳定 plugin runtime、第三方 marketplace、Data Console 生产 surface 或 template ecosystem。
+`/api/v1/plugins`、`/api/v1/templates` 和 `/api/v1/data` 在当前 Core API 中属于 preview metadata 或 feature-flagged surface，不代表稳定 plugin runtime、第三方 marketplace 或 Data Console 生产 surface。Backend OS Alpha 的可审计 template scaffold 由 `plystractl templates create` 生成；HTTP template routes 仍用于 manifest、preview 和 admin metadata。
 
 ## Authorization Context Mode
 

@@ -77,6 +77,40 @@ Never manually mutate audit records unless following an emergency recovery proce
 
 ---
 
+## Backend OS Alpha Template Setup
+
+Backend OS Alpha includes an inspectable template setup command. It creates a local application directory from an official template manifest and writes the operational files needed to launch, inspect, back up, and upgrade the app.
+
+```bash
+plystractl templates list
+plystractl templates describe auth-ready-saas
+plystractl templates create --template auth-ready-saas --name "Acme SaaS" --out ./acme-saas
+```
+
+The generated directory contains:
+
+| File | Purpose |
+|---|---|
+| `README.md` | Start and operation commands for the generated app. |
+| `.env.example` | Production-oriented environment template with placeholder secrets only. |
+| `docker-compose.yml` | Core, PostgreSQL, and required official plugin sidecar services for the selected template. |
+| `plystra/template-installation.json` | Template manifest, deployment profile, preview, required plugins, and capability requirements. |
+| `plystra/install-explanation.md` | Human-readable install explanation, defaults, operator actions, and limitations. |
+
+The command is intentionally transparent rather than magical. It does not generate real secrets, does not create the first instance super admin, does not run migrations automatically, and does not imply a public marketplace. Review the generated files, copy `.env.example` to `.env`, set strong secrets, then start and verify:
+
+```bash
+docker compose --env-file .env up -d postgres
+docker compose --env-file .env run --rm plystra-core plystractl migrate up
+docker compose --env-file .env run --rm plystra-core plystractl migrate verify
+docker compose --env-file .env run --rm plystra-core plystractl doctor
+docker compose --env-file .env up -d
+```
+
+For templates that require Complete Auth, configure the plugin database settings in `plugin_auth_settings` before enabling public auth flows. Production email delivery must use an independent email capability provider.
+
+---
+
 ## 3. Migration Commands
 
 ## 3.1 Apply Migrations

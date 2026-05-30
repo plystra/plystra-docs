@@ -165,7 +165,7 @@ API key 调用必须传入嵌套 `actor`。Bearer session 调用可以省略 `ac
 | Plugin metadata preview | `POST /api/v1/plugins/validate-manifest`、`POST /api/v1/plugins/install`、`GET /api/v1/plugins`、`GET /api/v1/plugins/{key}`、lifecycle 和 metadata subroutes，包括 `/admin-menus` |
 | Template metadata preview | `GET /api/v1/templates`、`GET /api/v1/templates/{id}`、`POST /api/v1/templates/{id}/preview-install`、`POST /api/v1/templates/{id}/install` |
 
-Plugin 和 template 路由在当前 Core API 中属于 preview metadata surface，不代表稳定 plugin runtime、第三方 marketplace、capability system 或 one-command template ecosystem 已经承诺。
+Plugin 和 template HTTP 路由在当前 Core API 中属于 preview metadata surface，不代表稳定 plugin runtime、第三方 marketplace 或完整 capability system 已经承诺。Backend OS Alpha 的可审计模板初始化入口是 `plystractl templates create`；HTTP template routes 仍用于 manifest/preview/admin metadata。
 
 User 响应已做脱敏，不返回 `password_hash`。
 

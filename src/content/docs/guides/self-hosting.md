@@ -153,6 +153,16 @@ email_from_address = "no-reply@example.com"
 
 The capability URL must implement the independent email delivery contract. Official provider plugin repositories include SMTP and Cloudflare Email Sending.
 
+## Backend OS Alpha Templates
+
+For an inspectable one-command setup scaffold, generate an application directory from an official template:
+
+```bash
+go run ./cmd/plystractl templates create --template auth-ready-saas --name "Acme SaaS" --out ./acme-saas
+```
+
+The generated directory contains a `docker-compose.yml`, `.env.example`, template manifest, install explanation, and README. It does not write real secrets, does not run migrations automatically, and does not create the first instance super admin. Review the generated files, set production secrets, then follow the generated README.
+
 ## Reverse Proxy and Client IP
 
 Plystra trusts forwarded IP headers only when `TRUSTED_PROXIES` is configured. Otherwise request IP metadata comes from `RemoteAddr`.
