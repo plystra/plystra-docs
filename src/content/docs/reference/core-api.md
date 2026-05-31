@@ -5,8 +5,8 @@ description: Plystra Core v1.0 HTTP API envelopes, authentication schemes, endpo
 
 Core API uses the `/api/v1` prefix and JSON envelopes. The generated OpenAPI artifacts for this docs build are:
 
-- [OpenAPI JSON](/openapi/plystra.v1.0.0.json)
-- [OpenAPI YAML](/openapi/plystra.v1.0.0.yaml)
+- [OpenAPI JSON](/openapi/plystra.v0.0.1.json)
+- [OpenAPI YAML](/openapi/plystra.v0.0.1.yaml)
 
 Regenerate them from the Core repository with:
 
@@ -14,7 +14,7 @@ Regenerate them from the Core repository with:
 make openapi
 ```
 
-The generated source of truth lives in `plystra/plystra/openapi/plystra.v1.0.0.{json,yaml}`.
+The generated source of truth lives in `plystra/plystra/openapi/plystra.v0.0.1.{json,yaml}`.
 
 ## Security Schemes
 

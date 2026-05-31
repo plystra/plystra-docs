@@ -3,7 +3,7 @@ title: Admin Auth and Security
 description: Exact security model for Plystra Core management APIs, user sessions, admin grants, scoped API keys, and anti-escalation rules.
 ---
 
-This reference documents the current Core management authorization model in `1.0.0-rc121`. It is intentionally explicit because this layer protects the control plane.
+This reference documents the current Core management authorization model in `0.0.1`. It is intentionally explicit because this layer protects the control plane.
 
 ## Core Rule
 

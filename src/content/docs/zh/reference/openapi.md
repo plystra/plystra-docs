@@ -7,8 +7,8 @@ Plystra Core 为当前 HTTP contract 发布生成的 OpenAPI artifacts。
 
 ## 下载
 
-- [OpenAPI JSON](/openapi/plystra.v1.0.0.json)
-- [OpenAPI YAML](/openapi/plystra.v1.0.0.yaml)
+- [OpenAPI JSON](/openapi/plystra.v0.0.1.json)
+- [OpenAPI YAML](/openapi/plystra.v0.0.1.yaml)
 
 这些文件描述 Core `/api/v1` surface：public health/version routes、session auth、actor context、admin grants、API keys、authorization、identity and scope entities、Resource Registry、resources、audit logs、preview plugin/template metadata、Data Console preview 和 metrics。
 
@@ -25,8 +25,8 @@ make openapi
 命令使用 `cmd/plystra-openapi` 下的 Go generator，并写入：
 
 ```text
-openapi/plystra.v1.0.0.json
-openapi/plystra.v1.0.0.yaml
+openapi/plystra.v0.0.1.json
+openapi/plystra.v0.0.1.yaml
 ```
 
 Generator 基于 `github.com/swaggest/openapi-go/openapi3`；不要手动编辑生成文件。

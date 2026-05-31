@@ -7,8 +7,8 @@ Plystra Core publishes generated OpenAPI artifacts for the current HTTP contract
 
 ## Downloads
 
-- [OpenAPI JSON](/openapi/plystra.v1.0.0.json)
-- [OpenAPI YAML](/openapi/plystra.v1.0.0.yaml)
+- [OpenAPI JSON](/openapi/plystra.v0.0.1.json)
+- [OpenAPI YAML](/openapi/plystra.v0.0.1.yaml)
 
 The files describe the Core `/api/v1` surface: public health/version routes, session auth, actor context, admin grants, API keys, authorization, identity and scope entities, Resource Registry, resources, audit logs, preview plugin/template metadata, Data Console preview, and metrics.
 
@@ -25,8 +25,8 @@ make openapi
 The command uses the Go generator under `cmd/plystra-openapi` and writes:
 
 ```text
-openapi/plystra.v1.0.0.json
-openapi/plystra.v1.0.0.yaml
+openapi/plystra.v0.0.1.json
+openapi/plystra.v0.0.1.yaml
 ```
 
 The generator is based on `github.com/swaggest/openapi-go/openapi3`; do not hand-edit the generated files.

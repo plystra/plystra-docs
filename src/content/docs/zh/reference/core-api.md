@@ -5,8 +5,8 @@ description: Plystra Core v1.0 HTTP API 的响应 envelope、认证 scheme、end
 
 Core API 统一使用 `/api/v1` 前缀，并返回 JSON envelope。当前 docs build 发布的 OpenAPI artifacts：
 
-- [OpenAPI JSON](/openapi/plystra.v1.0.0.json)
-- [OpenAPI YAML](/openapi/plystra.v1.0.0.yaml)
+- [OpenAPI JSON](/openapi/plystra.v0.0.1.json)
+- [OpenAPI YAML](/openapi/plystra.v0.0.1.yaml)
 
 在 Core 仓库重新生成：
 
@@ -14,7 +14,7 @@ Core API 统一使用 `/api/v1` 前缀，并返回 JSON envelope。当前 docs b
 make openapi
 ```
 
-生成文件位于 `plystra/plystra/openapi/plystra.v1.0.0.{json,yaml}`。
+生成文件位于 `plystra/plystra/openapi/plystra.v0.0.1.{json,yaml}`。
 
 ## Security Schemes
 

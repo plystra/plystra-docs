@@ -3,7 +3,7 @@ title: System Capabilities
 description: Production boundaries for Plystra's trusted built-in system capability modules.
 ---
 
-Plystra `1.0.0-rc121` keeps the runtime entrypoint and the official system capabilities inside the `plystra/plystra` repository. The kernel loads them as built-in privileged modules during process startup.
+Plystra `0.0.1` keeps the runtime entrypoint and the official system capabilities inside the `plystra/plystra` repository. The kernel loads them as built-in privileged modules during process startup.
 
 System capabilities are not business plugins. They are the governance layer that business plugins must pass through.
 
@@ -19,7 +19,7 @@ System capabilities are not business plugins. They are the governance layer that
 
 The current model is intentionally narrow.
 
-Allowed in `1.0.0-rc121`:
+Allowed in `0.0.1`:
 
 - built-in modules under `internal/system/*`
 - stable kernel contracts under `internal/kernel/contracts`
@@ -28,7 +28,7 @@ Allowed in `1.0.0-rc121`:
 - dependency ordering and readiness checks
 - kernel-owned service registry, route registry, event substrate, and migration registry
 
-Not supported in `1.0.0-rc121`:
+Not supported in `0.0.1`:
 
 - runtime hot unload or replacement of required system capabilities
 - third-party system capabilities
@@ -101,7 +101,7 @@ Each built-in system capability manifest must declare:
 
 - a supported ID from the official required set
 - `kind: system_capability`
-- semantic version, currently `1.0.0-rc121`
+- semantic version, currently `0.0.1`
 - required capability dependencies
 - provided services, routes, events, and migration ownership
 - `privileged: true`

@@ -74,7 +74,7 @@ Complete Auth 只有在启用 email delivery 时拉取独立 email contract：
 ```text
 plystra/email-contracts
 capability id: email.transactional
-version: 1.0.0
+version: 0.0.1
 level: standard
 endpoint: POST /contract/v1/email/send
 ```

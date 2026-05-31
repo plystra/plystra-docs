@@ -6,8 +6,8 @@ description: Current v1.0 HTTP API behavior, authentication, response envelopes,
 Plystra Core exposes the `/api/v1` HTTP API. The generated OpenAPI files are published with this docs site:
 
 ```text
-/openapi/plystra.v1.0.0.yaml
-/openapi/plystra.v1.0.0.json
+/openapi/plystra.v0.0.1.yaml
+/openapi/plystra.v0.0.1.json
 ```
 
 Those files are generated from the current Go API contract with `swaggest/openapi-go`. They include request bodies, response envelopes, security schemes, endpoint tags, and route groups.

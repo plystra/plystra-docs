@@ -74,7 +74,7 @@ Complete Auth pulls in the independent email contract only when email delivery i
 ```text
 plystra/email-contracts
 capability id: email.transactional
-version: 1.0.0
+version: 0.0.1
 level: standard
 endpoint: POST /contract/v1/email/send
 ```

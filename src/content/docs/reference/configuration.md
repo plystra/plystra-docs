@@ -13,7 +13,7 @@ Plystra Core is configured through environment variables. In production, `cmd/pl
 | `SERVER_PORT` / `PLYSTRA_SERVER_PORT` | `8080` | HTTP port. |
 | `SERVER_MODE` / `PLYSTRA_ENV` | `development` | Set to `production` for production guards. |
 | `SERVER_PUBLIC_URL` / `PLYSTRA_SERVER_PUBLIC_URL` | local development URL in `.env.example` | Public URL. Required and non-localhost in production. |
-| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `1.0.0-rc121` | Reported by the version endpoint. |
+| `PLYSTRA_CORE_VERSION` / `CORE_VERSION` | `0.0.1` | Reported by the version endpoint. |
 
 ## Database
 

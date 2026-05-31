@@ -6,8 +6,8 @@ description: 当前 v1.0 HTTP API 行为、认证方式、响应 envelope、受�
 Plystra Core 暴露 `/api/v1` HTTP API。当前文档站发布生成的 OpenAPI 文件：
 
 ```text
-/openapi/plystra.v1.0.0.yaml
-/openapi/plystra.v1.0.0.json
+/openapi/plystra.v0.0.1.yaml
+/openapi/plystra.v0.0.1.json
 ```
 
 这些文件由当前 Go API contract 通过 `swaggest/openapi-go` 生成，包含 request bodies、response envelopes、security schemes、endpoint tags 和 route groups。

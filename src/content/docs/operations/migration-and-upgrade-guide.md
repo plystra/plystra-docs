@@ -370,7 +370,7 @@ or put the application in maintenance mode.
 
 ```bash
 git fetch --tags
-git checkout v1.0.0
+git checkout v0.0.1
 ```
 
 or update Docker image tag.
