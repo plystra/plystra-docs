@@ -1,11 +1,11 @@
 ---
 title: Scope Model
-description: Migrated from the Core repository and updated for the current v1.0 codebase.
+description: Plystra v1.0 permission scope semantics.
 ---
 
-# Scope Model
+Permission grants combine `resource`, `action`, and `scope`. Role assignments can include `scope_anchor_group_id` when the scope needs a group anchor.
 
-Plystra v0.2 supports four normal scopes and reserves `global`.
+## v1.0 Scopes
 
 | Scope | Rule | Result |
 |---|---|---|
@@ -22,4 +22,6 @@ target_path = anchor_path OR target_path LIKE anchor_path || '.%'
 ```
 
 This avoids matching unrelated paths such as `finance-old`.
+
+`global` is reserved for future system-level semantics and always denies for ordinary authorization checks in the current release.
 

@@ -25,6 +25,7 @@ export default defineConfig({
 					label: 'Start',
 					translations: { 'zh-CN': '开始' },
 					items: [
+						{ label: 'Implementation Map', translations: { 'zh-CN': '实现地图' }, slug: 'reference/implementation-map' },
 						{ label: 'Quickstart', translations: { 'zh-CN': '快速开始' }, slug: 'getting-started' },
 						{
 							label: 'Developer Handbook',
@@ -42,6 +43,7 @@ export default defineConfig({
 						},
 						{ label: 'Integrate Your App', translations: { 'zh-CN': '接入你的应用' }, slug: 'guides/integrate-your-app' },
 						{ label: 'SDKs', translations: { 'zh-CN': 'SDK' }, slug: 'guides/sdks' },
+						{ label: 'OpenAPI', translations: { 'zh-CN': 'OpenAPI' }, slug: 'reference/openapi' },
 					],
 				},
 				{
@@ -58,6 +60,7 @@ export default defineConfig({
 					translations: { 'zh-CN': '指南' },
 					items: [
 						{ label: 'HTTP API', translations: { 'zh-CN': 'HTTP API' }, slug: 'guides/http-api' },
+						{ label: 'Backend OS Alpha Templates', translations: { 'zh-CN': 'Backend OS Alpha Templates' }, slug: 'guides/backend-os-alpha-templates' },
 						{ label: 'Self-hosting', translations: { 'zh-CN': '自托管部署' }, slug: 'guides/self-hosting' },
 					],
 				},
@@ -65,9 +68,13 @@ export default defineConfig({
 					label: 'Reference',
 					translations: { 'zh-CN': '参考' },
 					items: [
+						{ label: 'Implementation Map', translations: { 'zh-CN': '实现地图' }, slug: 'reference/implementation-map' },
+						{ label: 'OpenAPI', translations: { 'zh-CN': 'OpenAPI' }, slug: 'reference/openapi' },
+						{ label: 'Complete Auth Plugin', translations: { 'zh-CN': 'Complete Auth Plugin' }, slug: 'reference/complete-auth-plugin' },
+						{ label: 'Plugins and Capabilities', translations: { 'zh-CN': 'Plugins and Capabilities' }, slug: 'reference/plugins-and-capabilities' },
 						{ label: 'Configuration', translations: { 'zh-CN': '配置项' }, slug: 'reference/configuration' },
 						{ label: 'Database and Migrations', translations: { 'zh-CN': '数据库与迁移' }, slug: 'reference/database-and-migrations' },
-						{ label: 'Kernel API Reference', translations: { 'zh-CN': 'Kernel API 参考' }, slug: 'reference/core-api' },
+						{ label: 'Core API Reference', translations: { 'zh-CN': 'Core API 参考' }, slug: 'reference/core-api' },
 						{ label: 'Admin Auth and Security', translations: { 'zh-CN': 'Admin Auth 与安全边界' }, slug: 'reference/admin-auth-and-security' },
 						{ label: 'System Capabilities', translations: { 'zh-CN': 'System Capabilities' }, slug: 'reference/system-capabilities' },
 						{ label: 'Resource Registry', translations: { 'zh-CN': 'Resource Registry' }, slug: 'reference/resource-registry' },
