@@ -1,9 +1,9 @@
 ---
 title: Getting Started
-description: Run Plystra locally, test native auth, and protect one action with Context Mode.
+description: Run Plystra Core locally, test native auth, and protect one action with Context Mode.
 ---
 
-Plystra starts with the `plystra/plystra` runtime. You can test native auth and protect one existing backend action without migrating all users, organizations, roles, or business resources into Plystra.
+Plystra Core starts with the `plystra/core` runtime. You can test native auth and protect one existing backend action without migrating all users, organizations, roles, or business resources into Plystra.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Plystra starts with the `plystra/plystra` runtime. You can test native auth and 
 ## Start With Docker
 
 ```bash
-cd plystra/plystra
+cd plystra/core
 docker compose up -d --build postgres
 docker compose run --rm plystra-core plystractl migrate up
 docker compose run --rm plystra-core plystractl migrate verify
@@ -56,7 +56,7 @@ go run ./cmd/plystrad
 Windows PowerShell:
 
 ```powershell
-cd C:\Users\i\Documents\GitHub\plystra\plystra
+cd C:\to\your\path\plystra\core
 $env:DATABASE_URL = "postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
 go run .\cmd\plystractl migrate up
 go run .\cmd\plystractl migrate verify

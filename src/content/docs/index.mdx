@@ -1,5 +1,5 @@
 ---
-title: Plystra
+title: Plystra Core
 description: Self-hosted identity, authorization, audit, and governed backend capabilities for production applications.
 template: splash
 hero:
@@ -13,7 +13,7 @@ hero:
       icon: right-arrow
       variant: minimal
     - text: View on GitHub
-      link: https://github.com/plystra/plystra
+      link: https://github.com/plystra/core
       icon: external
       variant: minimal
 ---
@@ -22,7 +22,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Stability Levels
 
-Plystra documentation uses three maturity labels:
+Plystra Core documentation uses three maturity labels:
 
 ```text
 Stable: implemented behavior you can rely on in the current self-hosted release.
@@ -38,7 +38,7 @@ Expanded authentication is intentionally outside Core. Use the Complete Auth plu
 
 <CardGrid>
 	<Card title="Quickstart" icon="rocket" href="/getting-started/">
-		Start Plystra with Docker or Go, apply migrations, bootstrap a demo admin explicitly, and protect an invoice approval action.
+		Start Plystra Core with Docker or Go, apply migrations, bootstrap a demo admin explicitly, and protect an invoice approval action.
 	</Card>
 	<Card title="Implementation Map" icon="open-book" href="/reference/implementation-map/">
 		See every current repository, runtime surface, and Stable/Preview/Vision boundary in one place.
@@ -61,7 +61,7 @@ Expanded authentication is intentionally outside Core. Use the Complete Auth plu
 
 <CardGrid stagger>
 	<Card title="Core runtime" icon="rocket">
-		The `plystra/plystra` repository is the runtime entrypoint. It loads privileged system capabilities at startup and exposes `/api/v1`.
+		The `plystra/core` repository is the runtime entrypoint. It loads privileged system capabilities at startup and exposes `/api/v1`.
 	</Card>
 	<Card title="System capabilities" icon="setting">
 		Identity, authorization, resource registry, audit, and admin control are system capabilities, not ordinary optional business plugins.

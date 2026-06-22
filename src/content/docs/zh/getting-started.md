@@ -1,9 +1,9 @@
 ---
 title: 快速开始
-description: 本地运行 Plystra、测试 native auth，并用 Context Mode 保护一个动作。
+description: 本地运行 Plystra Core、测试 native auth，并用 Context Mode 保护一个动作。
 ---
 
-Plystra 从 `plystra/plystra` runtime 开始。你可以先测试 native auth，并保护一个现有后端动作；第一次授权检查前，不需要把所有用户、组织、角色或业务资源迁移到 Plystra。
+Plystra Core 从 `plystra/core` runtime 开始。你可以先测试 native auth，并保护一个现有后端动作；第一次授权检查前，不需要把所有用户、组织、角色或业务资源迁移到 Plystra。
 
 ## 前置要求
 
@@ -14,7 +14,7 @@ Plystra 从 `plystra/plystra` runtime 开始。你可以先测试 native auth，
 ## 使用 Docker 启动
 
 ```bash
-cd plystra/plystra
+cd plystra/core
 docker compose up -d --build postgres
 docker compose run --rm plystra-core plystractl migrate up
 docker compose run --rm plystra-core plystractl migrate verify
@@ -46,7 +46,7 @@ Migrations 永远不会在生产中自动创建 super admin。
 Linux 和 macOS：
 
 ```bash
-cd ~/src/plystra/plystra
+cd ~/src/plystra/core
 export DATABASE_URL="postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
 go run ./cmd/plystractl migrate up
 go run ./cmd/plystractl migrate verify
@@ -56,7 +56,7 @@ go run ./cmd/plystrad
 Windows PowerShell：
 
 ```powershell
-cd C:\Users\i\Documents\GitHub\plystra\plystra
+cd C:\to\your\path\plystra\core
 $env:DATABASE_URL = "postgres://plystra:plystra@localhost:5432/plystra?sslmode=disable"
 go run .\cmd\plystractl migrate up
 go run .\cmd\plystractl migrate verify
